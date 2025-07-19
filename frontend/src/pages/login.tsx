@@ -13,10 +13,11 @@ export default function LoginPage() {
           className="w-20 h-20 mx-auto rounded-full shadow-lg border-4 border-gray-800 bg-[#232323]"
         />
 
-        <Link href="/api/auth/login" legacyBehavior>
-          <a className="w-full inline-block px-6 py-3 mt-4 bg-[#facc15] text-gray-900 font-semibold rounded-lg shadow-md hover:bg-yellow-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#facc15] focus:ring-offset-2 focus:ring-offset-gray-900">
-            Log in with Auth0
-          </a>
+        <Link 
+          href="/api/auth/login" 
+          className="w-full inline-block px-6 py-3 mt-4 bg-[#facc15] text-gray-900 font-semibold rounded-lg shadow-md hover:bg-yellow-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#facc15] focus:ring-offset-2 focus:ring-offset-gray-900"
+        >
+          Log in with Auth0
         </Link>
 
         <p className="text-xs text-gray-500 mt-2">Secure login powered by <span className="text-indigo-400 font-medium">Auth0</span></p>
