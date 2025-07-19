@@ -44,6 +44,8 @@ ENV/
 env/
 backend/.venv/
 backend/venv/
+venv/
+frontend/.next/
 
 # IDE
 .vscode/
