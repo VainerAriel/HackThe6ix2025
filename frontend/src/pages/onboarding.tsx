@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useRouter } from 'next/router';
 import RoleStep from '@/components/onboarding/RoleStep';
 import BossTypeStep from '@/components/onboarding/BossTypeStep';
 import ConfidenceStep from '@/components/onboarding/ConfidenceStep';
@@ -7,6 +8,7 @@ import GoalsStep from '@/components/onboarding/GoalsStep';
 const steps = ["Role", "Boss Type", "Confidence", "Goals"];
 
 export default function OnboardingPage() {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState({
     role: '',
@@ -19,7 +21,14 @@ export default function OnboardingPage() {
     setFormData(prev => ({ ...prev, ...newData }));
   };
 
-  const next = () => setCurrentStep(prev => Math.min(prev + 1, steps.length - 1));
+  const next = () => {
+    if (currentStep === steps.length - 1) {
+      // If we're on the final step (goals), navigate to chat page
+      router.push('/chat');
+    } else {
+      setCurrentStep(prev => Math.min(prev + 1, steps.length - 1));
+    }
+  };
   const prev = () => setCurrentStep(prev => Math.max(prev - 1, 0));
 
   return (

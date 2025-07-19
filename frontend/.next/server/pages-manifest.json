@@ -1,8 +1,12 @@
 {
   "/_app": "pages/_app.js",
-  "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/dashboard": "pages/dashboard.js",
-  "/login": "pages/login.js",
-  "/onboarding": "pages/onboarding.js"
+  "/api/hello": "pages/api/hello.js",
+  "/_error": "pages/_error.js",
+  "/chat": "pages/chat.html",
+  "/dashboard": "pages/dashboard.html",
+  "/login": "pages/login.html",
+  "/onboarding": "pages/onboarding.html",
+  "/": "pages/index.html",
+  "/404": "pages/404.html"
 }

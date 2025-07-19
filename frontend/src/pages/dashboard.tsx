@@ -7,7 +7,7 @@ export default function DashboardPage() {
         <h1 className="text-3xl font-extrabold text-white tracking-tight">
           <span className="text-[#facc15]">PitchPerfect</span> Dashboard
         </h1>
-        <p className="text-gray-300">Choose where you'd like to go:</p>
+        <p className="text-gray-300">Choose where you&apos;d like to go:</p>
 
         <div className="space-y-4">
           <Link 
