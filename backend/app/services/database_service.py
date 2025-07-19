@@ -92,8 +92,14 @@ class DatabaseService:
         """Create a new conversation"""
         try:
             self.ensure_connection()
-            result = self.conversations_collection.insert_one(conversation.to_dict())
-            return str(result.inserted_id)
+            conversation_dict = conversation.to_dict()
+            # Remove _id if it exists to let MongoDB generate it
+            conversation_dict.pop('_id', None)
+            
+            result = self.conversations_collection.insert_one(conversation_dict)
+            if result.inserted_id:
+                return str(result.inserted_id)
+            return None
         except Exception as e:
             print(f"Error creating conversation: {e}")
             return None
@@ -106,7 +112,16 @@ class DatabaseService:
                 {"user_id": user_id}
             ).sort("updated_at", -1)
             
-            return [Conversation.from_dict(conv) for conv in conversations_data]
+            conversations = []
+            for conv_data in conversations_data:
+                try:
+                    conversation = Conversation.from_dict(conv_data)
+                    conversations.append(conversation)
+                except Exception as e:
+                    print(f"Error parsing conversation {conv_data.get('_id')}: {e}")
+                    continue
+            
+            return conversations
         except Exception as e:
             print(f"Error getting conversations: {e}")
             return []
@@ -116,9 +131,15 @@ class DatabaseService:
         try:
             self.ensure_connection()
             from bson import ObjectId
-            conversation_data = self.conversations_collection.find_one(
-                {"_id": ObjectId(conversation_id)}
-            )
+            
+            # Handle invalid ObjectId format
+            try:
+                object_id = ObjectId(conversation_id)
+            except Exception:
+                print(f"Invalid conversation ID format: {conversation_id}")
+                return None
+            
+            conversation_data = self.conversations_collection.find_one({"_id": object_id})
             if conversation_data:
                 return Conversation.from_dict(conversation_data)
             return None
@@ -131,9 +152,21 @@ class DatabaseService:
         try:
             self.ensure_connection()
             from bson import ObjectId
+            
+            # Handle invalid ObjectId format
+            try:
+                object_id = ObjectId(conversation_id)
+            except Exception:
+                print(f"Invalid conversation ID format: {conversation_id}")
+                return False
+            
+            # Prepare update data without _id
+            update_data = conversation.to_dict()
+            update_data.pop('_id', None)
+            
             result = self.conversations_collection.update_one(
-                {"_id": ObjectId(conversation_id)},
-                {"$set": conversation.to_dict()}
+                {"_id": object_id},
+                {"$set": update_data}
             )
             return result.modified_count > 0
         except Exception as e:
@@ -145,9 +178,15 @@ class DatabaseService:
         try:
             self.ensure_connection()
             from bson import ObjectId
-            result = self.conversations_collection.delete_one(
-                {"_id": ObjectId(conversation_id)}
-            )
+            
+            # Handle invalid ObjectId format
+            try:
+                object_id = ObjectId(conversation_id)
+            except Exception:
+                print(f"Invalid conversation ID format: {conversation_id}")
+                return False
+            
+            result = self.conversations_collection.delete_one({"_id": object_id})
             return result.deleted_count > 0
         except Exception as e:
             print(f"Error deleting conversation: {e}")

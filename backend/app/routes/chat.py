@@ -44,14 +44,17 @@ def init_routes(api_ns):
     })
     
     send_message_model = api_ns.model('SendMessage', {
-        'message': fields.String(required=True, description='Message content')
+        'message': fields.String(required=True, description='Message content'),
+        'context_window_size': fields.Integer(description='Maximum messages to include in context', default=20)
     })
     
     send_message_response_model = api_ns.model('SendMessageResponse', {
         'success': fields.Boolean(description='Operation success status'),
         'response': fields.String(description='AI generated response'),
         'conversation_id': fields.String(description='Conversation ID'),
-        'model': fields.String(description='AI model used')
+        'model': fields.String(description='AI model used'),
+        'context_window_size': fields.Integer(description='Context window size used'),
+        'messages_processed': fields.Integer(description='Number of messages processed')
     })
     
     generate_response_model = api_ns.model('GenerateResponse', {
@@ -87,11 +90,11 @@ def init_routes(api_ns):
             return {
                 "conversations": [
                     {
-                        "id": str(conv.id) if hasattr(conv, 'id') else None,
+                        "id": conv.conversation_id,
                         "title": conv.title,
                         "created_at": conv.created_at.isoformat(),
                         "updated_at": conv.updated_at.isoformat(),
-                        "message_count": len(conv.messages)
+                        "message_count": conv.get_message_count()
                     }
                     for conv in conversations
                 ]
@@ -195,10 +198,11 @@ def init_routes(api_ns):
         @api_ns.response(500, 'Server Error', error_model)
         @require_auth
         def post(self, conversation_id):
-            """Send a message in a conversation"""
+            """Send a message in a conversation with enhanced context management"""
             user_id = g.user.get("sub")
             data = request.get_json()
             message_content = data.get("message")
+            context_window_size = data.get("context_window_size", 20)
             
             if not message_content:
                 api_ns.abort(400, "Message content is required")
@@ -214,33 +218,24 @@ def init_routes(api_ns):
             if conversation.user_id != user_id:
                 api_ns.abort(403, "Unauthorized")
             
-            # Add user message
-            conversation.add_message(message_content, "user")
-            
-            # Prepare messages for Gemini API
-            messages = [
-                {
-                    "role": msg.role,
-                    "content": msg.content
-                }
-                for msg in conversation.messages
-            ]
-            
-            # Generate response from Gemini
-            gemini_response = gemini_service.generate_response(messages, conversation_id)
+            # Use enhanced conversation handling with context management
+            gemini_response = gemini_service.generate_response_with_conversation(
+                conversation, 
+                message_content, 
+                context_window_size
+            )
             
             if gemini_response["success"]:
-                # Add assistant response to conversation
-                conversation.add_message(gemini_response["response"], "assistant")
-                
-                # Update conversation in database
+                # Update conversation in database (messages already added by the service)
                 db_service.update_conversation(conversation_id, conversation)
                 
                 return {
                     "success": True,
                     "response": gemini_response["response"],
                     "conversation_id": conversation_id,
-                    "model": gemini_response["model"]
+                    "model": gemini_response["model"],
+                    "context_window_size": gemini_response.get("context_window_size", context_window_size),
+                    "messages_processed": gemini_response.get("messages_processed", len(conversation.messages))
                 }
             else:
                 api_ns.abort(500, f"Failed to generate response: {gemini_response['error']}")
@@ -271,4 +266,41 @@ def init_routes(api_ns):
                     "model": response["model"]
                 }
             else:
-                api_ns.abort(500, f"Failed to generate response: {response['error']}") 
+                api_ns.abort(500, f"Failed to generate response: {response['error']}")
+
+    @api_ns.route('/conversations/<conversation_id>/title')
+    @api_ns.param('conversation_id', 'The conversation identifier')
+    class ConversationTitle(Resource):
+        @api_ns.doc('update_conversation_title', security='apikey')
+        @api_ns.response(200, 'Success', success_model)
+        @api_ns.response(401, 'Unauthorized', error_model)
+        @api_ns.response(403, 'Forbidden', error_model)
+        @api_ns.response(404, 'Not Found', error_model)
+        @api_ns.response(500, 'Server Error', error_model)
+        @require_auth
+        def put(self, conversation_id):
+            """Update conversation title based on content"""
+            user_id = g.user.get("sub")
+            conversation = db_service.get_conversation(conversation_id)
+            
+            if not conversation:
+                api_ns.abort(404, "Conversation not found")
+            
+            if conversation.user_id != user_id:
+                api_ns.abort(403, "Unauthorized")
+            
+            # Generate title from conversation content
+            new_title = conversation.generate_title_from_content()
+            conversation.title = new_title
+            
+            # Update in database
+            success = db_service.update_conversation(conversation_id, conversation)
+            
+            if success:
+                return {
+                    "success": True, 
+                    "message": "Conversation title updated",
+                    "title": new_title
+                }
+            else:
+                api_ns.abort(500, "Failed to update conversation title") 

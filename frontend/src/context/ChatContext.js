@@ -9,6 +9,7 @@ const initialState = {
     messages: [],
     loading: false,
     error: null,
+    contextWindowSize: 20,
 };
 
 const chatReducer = (state, action) => {
@@ -40,6 +41,17 @@ const chatReducer = (state, action) => {
                 conversations: [action.payload, ...state.conversations] 
             };
         
+        case 'UPDATE_CONVERSATION':
+            return {
+                ...state,
+                conversations: state.conversations.map(conv => 
+                    conv.id === action.payload.id ? action.payload : conv
+                ),
+                currentConversation: state.currentConversation?.id === action.payload.id 
+                    ? action.payload 
+                    : state.currentConversation
+            };
+        
         case 'REMOVE_CONVERSATION':
             return {
                 ...state,
@@ -56,6 +68,12 @@ const chatReducer = (state, action) => {
                 ...state,
                 currentConversation: null,
                 messages: []
+            };
+        
+        case 'SET_CONTEXT_WINDOW_SIZE':
+            return {
+                ...state,
+                contextWindowSize: action.payload
             };
         
         default:
@@ -109,7 +127,7 @@ export const ChatProvider = ({ children }) => {
         }
     };
 
-    const sendMessage = async (message) => {
+    const sendMessage = async (message, contextWindowSize = state.contextWindowSize) => {
         if (!state.currentConversation) {
             // Create new conversation if none exists
             const newConversation = await createConversation();
@@ -127,7 +145,7 @@ export const ChatProvider = ({ children }) => {
         dispatch({ type: 'ADD_MESSAGE', payload: userMessage });
 
         try {
-            const response = await chatService.sendMessage(conversationId, message);
+            const response = await chatService.sendMessage(conversationId, message, contextWindowSize);
             
             // Add assistant response
             const assistantMessage = {
@@ -137,13 +155,18 @@ export const ChatProvider = ({ children }) => {
             };
             dispatch({ type: 'ADD_MESSAGE', payload: assistantMessage });
             
-            // Update conversation in list
-            const updatedConversations = state.conversations.map(conv => 
-                conv.id === conversationId 
-                    ? { ...conv, updated_at: new Date().toISOString() }
-                    : conv
-            );
-            dispatch({ type: 'SET_CONVERSATIONS', payload: updatedConversations });
+            // Update conversation in list with new metadata
+            const updatedConversation = {
+                ...state.currentConversation,
+                updated_at: new Date().toISOString(),
+                message_count: state.messages.length + 2 // +2 for user and assistant messages
+            };
+            dispatch({ type: 'UPDATE_CONVERSATION', payload: updatedConversation });
+            
+            // Update context window size if provided in response
+            if (response.context_window_size && response.context_window_size !== contextWindowSize) {
+                dispatch({ type: 'SET_CONTEXT_WINDOW_SIZE', payload: response.context_window_size });
+            }
             
         } catch (error) {
             dispatch({ type: 'SET_ERROR', payload: error.message });
@@ -159,6 +182,28 @@ export const ChatProvider = ({ children }) => {
         }
     };
 
+    const updateConversationTitle = async (conversationId) => {
+        try {
+            const response = await chatService.updateConversationTitle(conversationId);
+            if (response.success) {
+                // Update the conversation in the list
+                const updatedConversation = {
+                    ...state.currentConversation,
+                    title: response.title
+                };
+                dispatch({ type: 'UPDATE_CONVERSATION', payload: updatedConversation });
+            }
+            return response;
+        } catch (error) {
+            dispatch({ type: 'SET_ERROR', payload: error.message });
+            throw error;
+        }
+    };
+
+    const setContextWindowSize = (size) => {
+        dispatch({ type: 'SET_CONTEXT_WINDOW_SIZE', payload: size });
+    };
+
     const clearError = () => {
         dispatch({ type: 'CLEAR_ERROR' });
     };
@@ -167,6 +212,15 @@ export const ChatProvider = ({ children }) => {
         dispatch({ type: 'CLEAR_CHAT' });
     };
 
+    // Auto-update conversation title when it has enough messages
+    useEffect(() => {
+        if (state.currentConversation && 
+            state.messages.length >= 4 && 
+            state.currentConversation.title === 'New Conversation') {
+            updateConversationTitle(state.currentConversation.id);
+        }
+    }, [state.messages.length, state.currentConversation]);
+
     const value = {
         ...state,
         fetchConversations,
@@ -174,6 +228,8 @@ export const ChatProvider = ({ children }) => {
         loadConversation,
         sendMessage,
         deleteConversation,
+        updateConversationTitle,
+        setContextWindowSize,
         clearError,
         clearChat,
     };
