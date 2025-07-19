@@ -1,11 +1,9 @@
 {
   "/_app": "pages/_app.js",
-  "/api/hello": "pages/api/hello.js",
-  "/_document": "pages/_document.js",
-  "/chat": "pages/chat.html",
-  "/": "pages/index.html",
-  "/login": "pages/login.html",
-  "/onboarding": "pages/onboarding.html",
   "/_error": "pages/_error.js",
-  "/404": "pages/404.html"
+  "/_document": "pages/_document.js",
+  "/dashboard": "pages/dashboard.js",
+  "/login": "pages/login.js",
+  "/api/test-backend": "pages/api/test-backend.js",
+  "/api/auth/test-token": "pages/api/auth/test-token.js"
 }
