@@ -1,0 +1,38 @@
+{
+  "name": "hackthe6ix2025",
+  "version": "1.0.0",
+  "description": "HackThe6ix 2025 project with MongoDB, Auth0, Gemini API, Flask, and React",
+  "main": "index.js",
+  "scripts": {
+    "install:backend": "cd backend && pip install -r requirements.txt",
+    "install:frontend": "cd frontend && npm install",
+    "install:all": "npm run install:backend && npm run install:frontend",
+    "start:backend": "cd backend && python run.py",
+    "start:frontend": "cd frontend && npm start",
+    "dev": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+    "build:frontend": "cd frontend && npm run build",
+    "test:backend": "cd backend && python -m pytest",
+    "test:frontend": "cd frontend && npm test",
+    "lint:frontend": "cd frontend && npm run lint",
+    "clean": "rm -rf frontend/node_modules backend/__pycache__ backend/app/__pycache__"
+  },
+  "keywords": [
+    "hackathon",
+    "flask",
+    "react",
+    "mongodb",
+    "auth0",
+    "gemini",
+    "ai",
+    "chat"
+  ],
+  "author": "HackThe6ix Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^7.6.0"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  }
+} 
