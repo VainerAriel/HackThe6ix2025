@@ -26,7 +26,7 @@ def get_auth0_public_keys():
     return AUTH0_PUBLIC_KEYS
 
 def verify_jwt_token(token):
-    """Verify JWT token from Auth0"""
+    """Verify JWT token from Auth0 (ID token or access token)"""
     try:
         # Decode token header to get key ID
         unverified_header = jwt.get_unverified_header(token)
@@ -66,13 +66,15 @@ def verify_jwt_token(token):
         
         # Verify and decode token
         auth0_domain = current_app.config['AUTH0_DOMAIN']
-        api_audience = current_app.config['AUTH0_API_AUDIENCE']
+        
+        # For ID tokens, the audience is the client ID
+        client_id = current_app.config['AUTH0_CLIENT_ID']
         
         payload = jwt.decode(
             token,
             pem,
             algorithms=['RS256'],
-            audience=api_audience,
+            audience=client_id,  # Use client ID for ID tokens
             issuer=f"https://{auth0_domain}/"
         )
         

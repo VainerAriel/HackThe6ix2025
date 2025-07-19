@@ -7,6 +7,7 @@ interface UserState {
   isLoading: boolean;
   error: string | null;
   isSynced: boolean;
+  lastSyncAttempt: number | null;
 }
 
 export const useUser = () => {
@@ -16,12 +17,14 @@ export const useUser = () => {
     isLoading: false,
     error: null,
     isSynced: false,
+    lastSyncAttempt: null,
   });
 
   // Function to sync user with database
   const syncUserWithDatabase = useCallback(async () => {
     if (!auth0User) return;
 
+    console.log('syncUserWithDatabase: Starting sync for user', auth0User.sub);
     setUserState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
@@ -32,10 +35,19 @@ export const useUser = () => {
       
       while (!token && retries < maxRetries) {
         try {
+          console.log(`syncUserWithDatabase: Attempting to get token (attempt ${retries + 1}/${maxRetries})`);
           const tokenResponse = await fetch('/api/auth/token');
           
           if (!tokenResponse.ok) {
             const errorData = await tokenResponse.json();
+            console.log('syncUserWithDatabase: Token request failed', {
+              status: tokenResponse.status,
+              error: errorData.error
+            });
+            // If token is not ready, don't retry - this is expected during initial load
+            if (tokenResponse.status === 401 && errorData.error?.includes('not ready')) {
+              throw new Error('Token not ready yet');
+            }
             throw new Error(`Token request failed: ${errorData.error || tokenResponse.statusText}`);
           }
           
@@ -45,8 +57,11 @@ export const useUser = () => {
           if (!token) {
             throw new Error('No access token available');
           }
+          
+          console.log('syncUserWithDatabase: Successfully got token');
         } catch (error) {
           retries++;
+          console.log(`syncUserWithDatabase: Token attempt ${retries} failed:`, error);
           if (retries >= maxRetries) {
             throw error;
           }
@@ -60,21 +75,34 @@ export const useUser = () => {
       // Sync user with database
       const profile = await ApiService.syncUser(token);
       
+      console.log('syncUserWithDatabase: Successfully synced user profile');
+      
       setUserState({
         profile,
         isLoading: false,
         error: null,
         isSynced: true,
+        lastSyncAttempt: Date.now(),
       });
 
       return profile;
     } catch (error) {
       console.error('Error syncing user with database:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to sync user';
+      
       setUserState(prev => ({
         ...prev,
         isLoading: false,
-        error: error instanceof Error ? error.message : 'Failed to sync user',
+        error: errorMessage,
+        lastSyncAttempt: Date.now(),
       }));
+      
+      // Don't throw error for token not ready - this is expected
+      if (errorMessage.includes('Token not ready yet')) {
+        console.log('syncUserWithDatabase: Token not ready - this is expected, not retrying');
+        return null;
+      }
+      
       throw error;
     }
   }, [auth0User]);
@@ -101,6 +129,7 @@ export const useUser = () => {
         isLoading: false,
         error: null,
         isSynced: true,
+        lastSyncAttempt: Date.now(),
       });
 
       return profile;
@@ -110,6 +139,7 @@ export const useUser = () => {
         ...prev,
         isLoading: false,
         error: error instanceof Error ? error.message : 'Failed to get user profile',
+        lastSyncAttempt: Date.now(),
       }));
       throw error;
     }
@@ -135,17 +165,36 @@ export const useUser = () => {
     }
   }, [auth0User]);
 
-  // Auto-sync user when Auth0 user changes
+  // Auto-sync user when Auth0 user changes, but with better error handling
   useEffect(() => {
     if (auth0User && !userState.isSynced && !userState.isLoading) {
-      // Add a small delay to ensure Auth0 session is fully established
-      const timer = setTimeout(() => {
-        syncUserWithDatabase();
-      }, 1000);
+      // Check if we've tried recently (within last 30 seconds)
+      const now = Date.now();
+      const lastAttempt = userState.lastSyncAttempt || 0;
+      const timeSinceLastAttempt = now - lastAttempt;
       
-      return () => clearTimeout(timer);
+      console.log('useUser: Checking sync conditions', {
+        hasAuth0User: !!auth0User,
+        isSynced: userState.isSynced,
+        isLoading: userState.isLoading,
+        timeSinceLastAttempt,
+        shouldRetry: timeSinceLastAttempt > 30000
+      });
+      
+      // Only retry if it's been more than 30 seconds since last attempt
+      if (timeSinceLastAttempt > 30000) {
+        console.log('useUser: Starting sync attempt');
+        // Add a small delay to ensure Auth0 session is fully established
+        const timer = setTimeout(() => {
+          syncUserWithDatabase();
+        }, 1000);
+        
+        return () => clearTimeout(timer);
+      } else {
+        console.log('useUser: Skipping sync - too recent');
+      }
     }
-  }, [auth0User, userState.isSynced, userState.isLoading, syncUserWithDatabase]);
+  }, [auth0User, userState.isSynced, userState.isLoading, userState.lastSyncAttempt, syncUserWithDatabase]);
 
   // Reset state when user logs out
   useEffect(() => {
@@ -155,6 +204,7 @@ export const useUser = () => {
         isLoading: false,
         error: null,
         isSynced: false,
+        lastSyncAttempt: null,
       });
     }
   }, [auth0User]);
