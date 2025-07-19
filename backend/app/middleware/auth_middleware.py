@@ -92,25 +92,26 @@ def require_auth(f):
         auth_header = request.headers.get('Authorization')
         
         if not auth_header:
-            return jsonify({"error": "No authorization header"}), 401
+            # Return dict instead of Response for flask-restx compatibility
+            return {"error": "No authorization header"}, 401
         
         try:
             # Extract token from "Bearer <token>"
             parts = auth_header.split()
             if parts[0].lower() != 'bearer' or len(parts) != 2:
-                return jsonify({"error": "Invalid authorization header format"}), 401
+                return {"error": "Invalid authorization header format"}, 401
             
             token = parts[1]
             payload, error = verify_jwt_token(token)
             
             if error:
-                return jsonify({"error": error}), 401
+                return {"error": error}, 401
             
             # Add user info to Flask g object
             g.user = payload
             return f(*args, **kwargs)
             
         except Exception as e:
-            return jsonify({"error": f"Authentication error: {str(e)}"}), 401
+            return {"error": f"Authentication error: {str(e)}"}, 401
     
     return decorated 
