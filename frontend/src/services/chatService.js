@@ -1,16 +1,25 @@
 import { getAccessTokenSilently } from '@auth0/auth0-react';
 
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
 class ChatService {
     constructor() {
-        this.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+        this.baseURL = API_BASE_URL;
     }
 
     async getAuthHeaders() {
-        const token = localStorage.getItem('access_token');
-        return {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        };
+        try {
+            const token = await getAccessTokenSilently();
+            return {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            };
+        } catch (error) {
+            console.error('Error getting auth token:', error);
+            return {
+                'Content-Type': 'application/json',
+            };
+        }
     }
 
     async getConversations() {
@@ -71,16 +80,13 @@ class ChatService {
         }
     }
 
-    async sendMessage(conversationId, message, contextWindowSize = 20) {
+    async sendMessage(conversationId, message) {
         try {
             const headers = await this.getAuthHeaders();
             const response = await fetch(`${this.baseURL}/chat/conversations/${conversationId}/messages`, {
                 method: 'POST',
                 headers,
-                body: JSON.stringify({ 
-                    message,
-                    context_window_size: contextWindowSize
-                }),
+                body: JSON.stringify({ message }),
             });
 
             if (!response.ok) {
@@ -113,25 +119,6 @@ class ChatService {
         }
     }
 
-    async updateConversationTitle(conversationId) {
-        try {
-            const headers = await this.getAuthHeaders();
-            const response = await fetch(`${this.baseURL}/chat/conversations/${conversationId}/title`, {
-                method: 'PUT',
-                headers,
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            return await response.json();
-        } catch (error) {
-            console.error('Error updating conversation title:', error);
-            throw error;
-        }
-    }
-
     async generateResponse(prompt) {
         try {
             const headers = await this.getAuthHeaders();
@@ -153,5 +140,4 @@ class ChatService {
     }
 }
 
-const chatService = new ChatService();
-export default chatService; 
+export default new ChatService(); 
