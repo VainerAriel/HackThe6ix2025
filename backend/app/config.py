@@ -4,7 +4,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Config:
-    SECRET_KEY = os.getenv("FLASK_SECRET_KEY", "your-secret-key")
+    # Flask configuration
+    SECRET_KEY = os.getenv("FLASK_SECRET_KEY", "dev-secret-key-change-in-production")
+    DEBUG = os.getenv("FLASK_ENV", "development") == "development"
     
     # Auth0 configuration
     AUTH0_DOMAIN = os.getenv("AUTH0_DOMAIN", "dev-6l1mmvy5gvfsblef.us.auth0.com")
@@ -16,7 +18,4 @@ class Config:
     MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017/hackthe6ix")
     
     # Gemini API configuration
-    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-    
-    # Flask configuration
-    DEBUG = os.getenv("FLASK_ENV") == "development" 
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") 

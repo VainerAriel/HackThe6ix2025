@@ -23,7 +23,21 @@ pip install -r requirements.txt
 
 Create a `.env` file in the `backend` directory:
 
+**Flask Configuration Variables:**
+- `FLASK_SECRET_KEY`: A secret key for Flask's security features (sessions, CSRF protection). For development, you can use the default value. For production, generate a strong random key.
+- `FLASK_ENV`: Set to `"development"` for development mode (auto-reload, debug info) or `"production"` for production deployment.
+
+**How to generate a strong secret key (for production):**
+```python
+import secrets
+print(secrets.token_hex(32))
+```
+
 ```env
+# Flask Configuration (Development)
+FLASK_SECRET_KEY=dev-secret-key-change-in-production
+FLASK_ENV=development
+
 # Auth0 Configuration
 AUTH0_DOMAIN=dev-6l1mmvy5gvfsblef.us.auth0.com
 AUTH0_CLIENT_ID=iyuPvHVVRTz45HLnjMVE1Z6gwOVdTDLR
@@ -35,10 +49,6 @@ MONGODB_URI=mongodb+srv://your-username:your-password@your-cluster.mongodb.net/h
 
 # Gemini API Configuration
 GEMINI_API_KEY=your-gemini-api-key
-
-# Flask Configuration
-FLASK_SECRET_KEY=your-secret-key-here
-FLASK_ENV=development
 ```
 
 ### 3. MongoDB Atlas Setup
