@@ -4,6 +4,7 @@ import React from 'react';
 interface Props {
   value: string[];  // Fixes error 1
   onBack: () => void;
+  onNext: () => void;
   onChange: (goals: string[]) => void;  // Fixes error 2
 }
 
@@ -15,7 +16,7 @@ const goalsList = [
   'General self-improvement',
 ];
 
-const GoalStep: React.FC<Props> = ({ value, onBack, onChange }) => {
+const GoalStep: React.FC<Props> = ({ value, onBack, onNext, onChange }) => {
   const toggleGoal = (goal: string) => {
     if (value.includes(goal)) {
       onChange(value.filter((g) => g !== goal));
@@ -40,6 +41,18 @@ const GoalStep: React.FC<Props> = ({ value, onBack, onChange }) => {
           </button>
         ))}
       </div>
+      <div className="flex justify-between mt-6">
+        <button onClick={onBack} className="text-sm text-gray-600 underline">Back</button>
+        <button
+          onClick={onNext}
+          disabled={value.length === 0}
+          className={`px-4 py-2 rounded ${
+            value ? 'bg-blue-600 text-white' : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+          }`}
+        >
+          Next
+        </button>
+        </div>
     </div>
   );
 };
