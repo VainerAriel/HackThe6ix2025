@@ -59,11 +59,19 @@ def verify_jwt_token(token):
         # Convert JWK to PEM format
         from cryptography.hazmat.primitives.asymmetric import rsa
         from cryptography.hazmat.primitives import serialization
-        
+        import base64
+
+        def base64url_decode(input_str):
+            # Add padding if necessary
+            rem = len(input_str) % 4
+            if rem > 0:
+                input_str += '=' * (4 - rem)
+            return base64.urlsafe_b64decode(input_str)
+
         # Extract key components
-        n = int.from_bytes(jwt.utils.base64url_decode(public_key['n']), 'big')
-        e = int.from_bytes(jwt.utils.base64url_decode(public_key['e']), 'big')
-        
+        n = int.from_bytes(base64url_decode(public_key['n']), 'big')
+        e = int.from_bytes(base64url_decode(public_key['e']), 'big')
+
         # Create RSA public key
         rsa_public_key = rsa.RSAPublicNumbers(e, n).public_key()
         
