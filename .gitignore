@@ -1,0 +1,18 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Environment
+.env
+
+# React / Node
+auth0-app/node_modules/
+auth0-app/build/
+auth0-app/.env
+
+# Logs
+*.log
+
+# macOS
+.DS_Store
