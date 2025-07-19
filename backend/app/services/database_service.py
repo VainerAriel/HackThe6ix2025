@@ -20,10 +20,22 @@ class DatabaseService:
         """Connect to MongoDB"""
         try:
             if self.client is None:
-                self.client = MongoClient(self.mongo_uri)
+                # Add connection options for better reliability with Atlas
+                self.client = MongoClient(
+                    self.mongo_uri,
+                    serverSelectionTimeoutMS=5000,  # 5 second timeout
+                    connectTimeoutMS=10000,         # 10 second connection timeout
+                    socketTimeoutMS=10000,          # 10 second socket timeout
+                    maxPoolSize=10,                 # Connection pool size
+                    retryWrites=True,               # Enable retry writes
+                    retryReads=True                 # Enable retry reads
+                )
                 self.db = self.client.get_database()
                 self.users_collection = self.db.users
                 self.conversations_collection = self.db.conversations
+                
+                # Test the connection
+                self.client.admin.command('ping')
                 print("Connected to MongoDB successfully")
         except Exception as e:
             print(f"Error connecting to MongoDB: {e}")
@@ -73,11 +85,47 @@ class DatabaseService:
             print(f"Error getting user: {e}")
             return None
     
+    def user_exists(self, auth0_id: str) -> bool:
+        """Check if user exists in database"""
+        try:
+            self.ensure_connection()
+            user_data = self.users_collection.find_one(
+                {"auth0_id": auth0_id}, 
+                {"_id": 1}  # Only get the ID to check existence
+            )
+            return user_data is not None
+        except Exception as e:
+            print(f"Error checking user existence: {e}")
+            return False
+    
+    def get_user_status(self, auth0_id: str) -> Dict[str, Any]:
+        """Get user status and basic info"""
+        try:
+            self.ensure_connection()
+            user_data = self.users_collection.find_one(
+                {"auth0_id": auth0_id},
+                {"auth0_id": 1, "email": 1, "name": 1, "created_at": 1, "updated_at": 1}
+            )
+            if user_data:
+                return {
+                    "exists": True,
+                    "auth0_id": user_data.get("auth0_id"),
+                    "email": user_data.get("email"),
+                    "name": user_data.get("name"),
+                    "created_at": user_data.get("created_at"),
+                    "updated_at": user_data.get("updated_at")
+                }
+            return {"exists": False}
+        except Exception as e:
+            print(f"Error getting user status: {e}")
+            return {"exists": False, "error": str(e)}
+    
     def update_user(self, auth0_id: str, updates: Dict[str, Any]) -> bool:
         """Update user information"""
         try:
             self.ensure_connection()
-            updates["updated_at"] = User.updated_at
+            from datetime import datetime
+            updates["updated_at"] = datetime.utcnow()
             result = self.users_collection.update_one(
                 {"auth0_id": auth0_id},
                 {"$set": updates}
@@ -85,6 +133,24 @@ class DatabaseService:
             return result.modified_count > 0
         except Exception as e:
             print(f"Error updating user: {e}")
+            return False
+    
+    def upsert_user(self, user: User) -> bool:
+        """Create or update user (upsert operation)"""
+        try:
+            self.ensure_connection()
+            from datetime import datetime
+            user_dict = user.to_dict()
+            user_dict["updated_at"] = datetime.utcnow()
+            
+            result = self.users_collection.update_one(
+                {"auth0_id": user.auth0_id},
+                {"$set": user_dict},
+                upsert=True
+            )
+            return True
+        except Exception as e:
+            print(f"Error upserting user: {e}")
             return False
     
     # Conversation operations
