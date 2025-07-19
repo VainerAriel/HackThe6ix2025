@@ -3,8 +3,13 @@ import ChatBubble from "./ChatBubble";
 import ChatInput from "./ChatInput";
 import ScenarioCard from "./ScenarioCard";
 
+interface Message {
+  sender: "user" | "ai";
+  text: string;
+}
+
 export default function ChatWindow() {
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<Message[]>([
     { sender: "ai", text: "Hey, let's talk about your Q2 performance review." }
   ]);
 

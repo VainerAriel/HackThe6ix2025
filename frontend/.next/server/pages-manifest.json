@@ -2,7 +2,10 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/login": "pages/login.js",
-  "/onboarding": "pages/onboarding.js",
-  "/chat": "pages/chat.js"
+  "/api/hello": "pages/api/hello.js",
+  "/chat": "pages/chat.html",
+  "/login": "pages/login.html",
+  "/": "pages/index.html",
+  "/onboarding": "pages/onboarding.html",
+  "/404": "pages/404.html"
 }

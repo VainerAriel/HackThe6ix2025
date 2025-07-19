@@ -1,177 +1,274 @@
-from flask import Blueprint, request, jsonify, g
+from flask import request, jsonify, g
+from flask_restx import Namespace, Resource, fields
 from ..middleware.auth_middleware import require_auth
 from ..services.gemini_service import gemini_service
 from ..services.database_service import db_service
 from ..models.conversation import Conversation, Message
 
-bp = Blueprint('chat', __name__, url_prefix='/api/chat')
-
-@bp.route("/conversations", methods=["GET"])
-@require_auth
-def get_conversations():
-    """Get all conversations for the authenticated user"""
-    user_id = g.user.get("sub")
-    conversations = db_service.get_user_conversations(user_id)
+def init_routes(api_ns):
+    # Define models for Swagger documentation
+    conversation_model = api_ns.model('Conversation', {
+        'id': fields.String(description='Conversation ID'),
+        'title': fields.String(description='Conversation title'),
+        'created_at': fields.String(description='Creation timestamp'),
+        'updated_at': fields.String(description='Last update timestamp'),
+        'message_count': fields.Integer(description='Number of messages in conversation')
+    })
     
-    return jsonify({
-        "conversations": [
-            {
-                "id": str(conv.id) if hasattr(conv, 'id') else None,
-                "title": conv.title,
-                "created_at": conv.created_at.isoformat(),
-                "updated_at": conv.updated_at.isoformat(),
-                "message_count": len(conv.messages)
-            }
-            for conv in conversations
-        ]
+    message_model = api_ns.model('Message', {
+        'content': fields.String(description='Message content'),
+        'role': fields.String(description='Message role (user/assistant)'),
+        'timestamp': fields.String(description='Message timestamp')
+    })
+    
+    conversation_detail_model = api_ns.model('ConversationDetail', {
+        'id': fields.String(description='Conversation ID'),
+        'title': fields.String(description='Conversation title'),
+        'messages': fields.List(fields.Nested(message_model), description='List of messages'),
+        'created_at': fields.String(description='Creation timestamp'),
+        'updated_at': fields.String(description='Last update timestamp')
+    })
+    
+    conversations_response_model = api_ns.model('ConversationsResponse', {
+        'conversations': fields.List(fields.Nested(conversation_model), description='List of conversations')
+    })
+    
+    create_conversation_model = api_ns.model('CreateConversation', {
+        'title': fields.String(description='Conversation title', default='New Conversation')
+    })
+    
+    create_conversation_response_model = api_ns.model('CreateConversationResponse', {
+        'success': fields.Boolean(description='Operation success status'),
+        'conversation_id': fields.String(description='Created conversation ID'),
+        'title': fields.String(description='Conversation title')
+    })
+    
+    send_message_model = api_ns.model('SendMessage', {
+        'message': fields.String(required=True, description='Message content')
+    })
+    
+    send_message_response_model = api_ns.model('SendMessageResponse', {
+        'success': fields.Boolean(description='Operation success status'),
+        'response': fields.String(description='AI generated response'),
+        'conversation_id': fields.String(description='Conversation ID'),
+        'model': fields.String(description='AI model used')
+    })
+    
+    generate_response_model = api_ns.model('GenerateResponse', {
+        'prompt': fields.String(required=True, description='Prompt for AI generation')
+    })
+    
+    generate_response_response_model = api_ns.model('GenerateResponseResponse', {
+        'success': fields.Boolean(description='Operation success status'),
+        'response': fields.String(description='AI generated response'),
+        'model': fields.String(description='AI model used')
+    })
+    
+    error_model = api_ns.model('Error', {
+        'error': fields.String(description='Error message')
+    })
+    
+    success_model = api_ns.model('Success', {
+        'success': fields.Boolean(description='Operation success status'),
+        'message': fields.String(description='Success message')
     })
 
-@bp.route("/conversations", methods=["POST"])
-@require_auth
-def create_conversation():
-    """Create a new conversation"""
-    user_id = g.user.get("sub")
-    data = request.get_json()
-    title = data.get("title", "New Conversation")
-    
-    conversation = Conversation(user_id=user_id, title=title)
-    conversation_id = db_service.create_conversation(conversation)
-    
-    if conversation_id:
-        return jsonify({
-            "success": True,
-            "conversation_id": conversation_id,
-            "title": title
-        }), 201
-    else:
-        return jsonify({"error": "Failed to create conversation"}), 500
+    @api_ns.route('/conversations')
+    class Conversations(Resource):
+        @api_ns.doc('get_conversations', security='apikey')
+        @api_ns.response(200, 'Success', conversations_response_model)
+        @api_ns.response(401, 'Unauthorized', error_model)
+        @require_auth
+        def get(self):
+            """Get all conversations for the authenticated user"""
+            user_id = g.user.get("sub")
+            conversations = db_service.get_user_conversations(user_id)
+            
+            return {
+                "conversations": [
+                    {
+                        "id": str(conv.id) if hasattr(conv, 'id') else None,
+                        "title": conv.title,
+                        "created_at": conv.created_at.isoformat(),
+                        "updated_at": conv.updated_at.isoformat(),
+                        "message_count": len(conv.messages)
+                    }
+                    for conv in conversations
+                ]
+            }
 
-@bp.route("/conversations/<conversation_id>", methods=["GET"])
-@require_auth
-def get_conversation(conversation_id):
-    """Get a specific conversation"""
-    user_id = g.user.get("sub")
-    conversation = db_service.get_conversation(conversation_id)
-    
-    if not conversation:
-        return jsonify({"error": "Conversation not found"}), 404
-    
-    if conversation.user_id != user_id:
-        return jsonify({"error": "Unauthorized"}), 403
-    
-    return jsonify({
-        "conversation": {
-            "id": conversation_id,
-            "title": conversation.title,
-            "messages": [
+        @api_ns.doc('create_conversation', security='apikey')
+        @api_ns.expect(create_conversation_model)
+        @api_ns.response(201, 'Created', create_conversation_response_model)
+        @api_ns.response(401, 'Unauthorized', error_model)
+        @api_ns.response(500, 'Server Error', error_model)
+        @require_auth
+        def post(self):
+            """Create a new conversation"""
+            user_id = g.user.get("sub")
+            data = request.get_json()
+            title = data.get("title", "New Conversation")
+            
+            conversation = Conversation(user_id=user_id, title=title)
+            conversation_id = db_service.create_conversation(conversation)
+            
+            if conversation_id:
+                return {
+                    "success": True,
+                    "conversation_id": conversation_id,
+                    "title": title
+                }, 201
+            else:
+                api_ns.abort(500, "Failed to create conversation")
+
+    @api_ns.route('/conversations/<conversation_id>')
+    @api_ns.param('conversation_id', 'The conversation identifier')
+    class ConversationDetail(Resource):
+        @api_ns.doc('get_conversation', security='apikey')
+        @api_ns.response(200, 'Success', conversation_detail_model)
+        @api_ns.response(401, 'Unauthorized', error_model)
+        @api_ns.response(403, 'Forbidden', error_model)
+        @api_ns.response(404, 'Not Found', error_model)
+        @require_auth
+        def get(self, conversation_id):
+            """Get a specific conversation"""
+            user_id = g.user.get("sub")
+            conversation = db_service.get_conversation(conversation_id)
+            
+            if not conversation:
+                api_ns.abort(404, "Conversation not found")
+            
+            if conversation.user_id != user_id:
+                api_ns.abort(403, "Unauthorized")
+            
+            return {
+                "conversation": {
+                    "id": conversation_id,
+                    "title": conversation.title,
+                    "messages": [
+                        {
+                            "content": msg.content,
+                            "role": msg.role,
+                            "timestamp": msg.timestamp.isoformat()
+                        }
+                        for msg in conversation.messages
+                    ],
+                    "created_at": conversation.created_at.isoformat(),
+                    "updated_at": conversation.updated_at.isoformat()
+                }
+            }
+
+        @api_ns.doc('delete_conversation', security='apikey')
+        @api_ns.response(200, 'Success', success_model)
+        @api_ns.response(401, 'Unauthorized', error_model)
+        @api_ns.response(403, 'Forbidden', error_model)
+        @api_ns.response(404, 'Not Found', error_model)
+        @api_ns.response(500, 'Server Error', error_model)
+        @require_auth
+        def delete(self, conversation_id):
+            """Delete a conversation"""
+            user_id = g.user.get("sub")
+            conversation = db_service.get_conversation(conversation_id)
+            
+            if not conversation:
+                api_ns.abort(404, "Conversation not found")
+            
+            if conversation.user_id != user_id:
+                api_ns.abort(403, "Unauthorized")
+            
+            success = db_service.delete_conversation(conversation_id)
+            
+            if success:
+                return {"success": True, "message": "Conversation deleted"}
+            else:
+                api_ns.abort(500, "Failed to delete conversation")
+
+    @api_ns.route('/conversations/<conversation_id>/messages')
+    @api_ns.param('conversation_id', 'The conversation identifier')
+    class ConversationMessages(Resource):
+        @api_ns.doc('send_message', security='apikey')
+        @api_ns.expect(send_message_model)
+        @api_ns.response(200, 'Success', send_message_response_model)
+        @api_ns.response(400, 'Bad Request', error_model)
+        @api_ns.response(401, 'Unauthorized', error_model)
+        @api_ns.response(403, 'Forbidden', error_model)
+        @api_ns.response(500, 'Server Error', error_model)
+        @require_auth
+        def post(self, conversation_id):
+            """Send a message in a conversation"""
+            user_id = g.user.get("sub")
+            data = request.get_json()
+            message_content = data.get("message")
+            
+            if not message_content:
+                api_ns.abort(400, "Message content is required")
+            
+            # Get or create conversation
+            conversation = db_service.get_conversation(conversation_id)
+            if not conversation:
+                # Create new conversation
+                conversation = Conversation(user_id=user_id, title="New Conversation")
+                conversation_id = db_service.create_conversation(conversation)
+                conversation = db_service.get_conversation(conversation_id)
+            
+            if conversation.user_id != user_id:
+                api_ns.abort(403, "Unauthorized")
+            
+            # Add user message
+            conversation.add_message(message_content, "user")
+            
+            # Prepare messages for Gemini API
+            messages = [
                 {
-                    "content": msg.content,
                     "role": msg.role,
-                    "timestamp": msg.timestamp.isoformat()
+                    "content": msg.content
                 }
                 for msg in conversation.messages
-            ],
-            "created_at": conversation.created_at.isoformat(),
-            "updated_at": conversation.updated_at.isoformat()
-        }
-    })
+            ]
+            
+            # Generate response from Gemini
+            gemini_response = gemini_service.generate_response(messages, conversation_id)
+            
+            if gemini_response["success"]:
+                # Add assistant response to conversation
+                conversation.add_message(gemini_response["response"], "assistant")
+                
+                # Update conversation in database
+                db_service.update_conversation(conversation_id, conversation)
+                
+                return {
+                    "success": True,
+                    "response": gemini_response["response"],
+                    "conversation_id": conversation_id,
+                    "model": gemini_response["model"]
+                }
+            else:
+                api_ns.abort(500, f"Failed to generate response: {gemini_response['error']}")
 
-@bp.route("/conversations/<conversation_id>/messages", methods=["POST"])
-@require_auth
-def send_message(conversation_id):
-    """Send a message in a conversation"""
-    user_id = g.user.get("sub")
-    data = request.get_json()
-    message_content = data.get("message")
-    
-    if not message_content:
-        return jsonify({"error": "Message content is required"}), 400
-    
-    # Get or create conversation
-    conversation = db_service.get_conversation(conversation_id)
-    if not conversation:
-        # Create new conversation
-        conversation = Conversation(user_id=user_id, title="New Conversation")
-        conversation_id = db_service.create_conversation(conversation)
-        conversation = db_service.get_conversation(conversation_id)
-    
-    if conversation.user_id != user_id:
-        return jsonify({"error": "Unauthorized"}), 403
-    
-    # Add user message
-    conversation.add_message(message_content, "user")
-    
-    # Prepare messages for Gemini API
-    messages = [
-        {
-            "role": msg.role,
-            "content": msg.content
-        }
-        for msg in conversation.messages
-    ]
-    
-    # Generate response from Gemini
-    gemini_response = gemini_service.generate_response(messages, conversation_id)
-    
-    if gemini_response["success"]:
-        # Add assistant response to conversation
-        conversation.add_message(gemini_response["response"], "assistant")
-        
-        # Update conversation in database
-        db_service.update_conversation(conversation_id, conversation)
-        
-        return jsonify({
-            "success": True,
-            "response": gemini_response["response"],
-            "conversation_id": conversation_id,
-            "model": gemini_response["model"]
-        })
-    else:
-        return jsonify({
-            "error": "Failed to generate response",
-            "details": gemini_response["error"]
-        }), 500
-
-@bp.route("/conversations/<conversation_id>", methods=["DELETE"])
-@require_auth
-def delete_conversation(conversation_id):
-    """Delete a conversation"""
-    user_id = g.user.get("sub")
-    conversation = db_service.get_conversation(conversation_id)
-    
-    if not conversation:
-        return jsonify({"error": "Conversation not found"}), 404
-    
-    if conversation.user_id != user_id:
-        return jsonify({"error": "Unauthorized"}), 403
-    
-    success = db_service.delete_conversation(conversation_id)
-    
-    if success:
-        return jsonify({"success": True, "message": "Conversation deleted"})
-    else:
-        return jsonify({"error": "Failed to delete conversation"}), 500
-
-@bp.route("/generate", methods=["POST"])
-@require_auth
-def generate_response():
-    """Generate a single response without conversation context"""
-    data = request.get_json()
-    prompt = data.get("prompt")
-    
-    if not prompt:
-        return jsonify({"error": "Prompt is required"}), 400
-    
-    response = gemini_service.generate_single_response(prompt)
-    
-    if response["success"]:
-        return jsonify({
-            "success": True,
-            "response": response["response"],
-            "model": response["model"]
-        })
-    else:
-        return jsonify({
-            "error": "Failed to generate response",
-            "details": response["error"]
-        }), 500 
+    @api_ns.route('/generate')
+    class GenerateResponse(Resource):
+        @api_ns.doc('generate_response', security='apikey')
+        @api_ns.expect(generate_response_model)
+        @api_ns.response(200, 'Success', generate_response_response_model)
+        @api_ns.response(400, 'Bad Request', error_model)
+        @api_ns.response(401, 'Unauthorized', error_model)
+        @api_ns.response(500, 'Server Error', error_model)
+        @require_auth
+        def post(self):
+            """Generate a single response without conversation context"""
+            data = request.get_json()
+            prompt = data.get("prompt")
+            
+            if not prompt:
+                api_ns.abort(400, "Prompt is required")
+            
+            response = gemini_service.generate_single_response(prompt)
+            
+            if response["success"]:
+                return {
+                    "success": True,
+                    "response": response["response"],
+                    "model": response["model"]
+                }
+            else:
+                api_ns.abort(500, f"Failed to generate response: {response['error']}") 
