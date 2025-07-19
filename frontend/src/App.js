@@ -1,8 +1,8 @@
 import React from "react";
-import LoginButton from "./components/LoginButton";
-import LogoutButton from "./components/LogoutButton";
-import Profile from "./components/Profile";
-import ApiDemo from "./components/ApiDemo";
+import LoginButton from "./components/auth/LoginButton";
+import LogoutButton from "./components/auth/LogoutButton";
+import Profile from "./components/auth/Profile";
+import ApiDemo from "./components/common/ApiDemo";
 import { useAuth0 } from "@auth0/auth0-react";
 
 function App() {

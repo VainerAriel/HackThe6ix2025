@@ -1,177 +1,178 @@
-# Auth0 React + Flask API Integration
+# HackThe6ix 2025
 
-This project demonstrates a complete authentication flow using Auth0 with a React frontend and Flask backend API.
+A modern web application built with Flask, React, MongoDB, Auth0, and Google's Gemini API for intelligent chat interactions.
 
-## Features
+## 🚀 Features
 
-- **React Frontend**: Uses Auth0 React SDK for authentication
-- **Flask Backend**: JWT token verification with Auth0 public keys
-- **Protected API Routes**: Secure endpoints that require valid JWT tokens
-- **CORS Support**: Cross-origin requests between frontend and backend
-- **Token-based Authentication**: Bearer token authentication for API calls
+- **Authentication**: Secure user authentication with Auth0
+- **AI Chat**: Intelligent conversations powered by Google's Gemini API
+- **Real-time Messaging**: Interactive chat interface with message history
+- **User Management**: User profiles and conversation management
+- **Modern UI**: Beautiful, responsive design with React
+- **Scalable Backend**: Modular Flask architecture with MongoDB
 
-## Project Structure
+## 🛠️ Tech Stack
+
+### Backend
+- **Flask**: Python web framework
+- **MongoDB**: NoSQL database for data persistence
+- **Auth0**: Authentication and authorization
+- **Google Gemini API**: AI-powered chat responses
+- **PyMongo**: MongoDB driver for Python
+
+### Frontend
+- **React**: JavaScript library for building user interfaces
+- **Auth0 React SDK**: Authentication integration
+- **CSS3**: Modern styling with responsive design
+- **Context API**: State management
+
+## 📁 Project Structure
 
 ```
 HackThe6ix2025/
-├── auth0-app/                 # React frontend
+├── backend/                          # Flask backend
+│   ├── app/
+│   │   ├── models/                  # MongoDB models
+│   │   ├── routes/                  # API routes
+│   │   ├── services/                # Business logic
+│   │   ├── middleware/              # Auth middleware
+│   │   └── utils/                   # Helper functions
+│   ├── tests/                       # Backend tests
+│   ├── requirements.txt             # Python dependencies
+│   └── run.py                       # Application entry point
+├── frontend/                        # React frontend
 │   ├── src/
-│   │   ├── components/
-│   │   │   ├── ApiService.js  # API client with auth
-│   │   │   ├── ApiDemo.js     # Demo component
-│   │   │   ├── LoginButton.js
-│   │   │   ├── LogoutButton.js
-│   │   │   └── Profile.js
-│   │   ├── App.js
-│   │   └── index.js
-│   └── package.json
-├── server.py                  # Flask backend
-├── requirements.txt           # Python dependencies
-└── README.md
+│   │   ├── components/              # React components
+│   │   ├── services/                # API services
+│   │   ├── context/                 # React context
+│   │   └── hooks/                   # Custom hooks
+│   └── package.json                 # Node dependencies
+├── docs/                            # Documentation
+├── scripts/                         # Build/deployment scripts
+└── README.md                        # This file
 ```
 
-## Setup Instructions
+## 🚀 Quick Start
 
-### 1. Install Dependencies
+### Prerequisites
 
-**Backend (Flask):**
+- Python 3.8+
+- Node.js 16+
+- MongoDB (local or cloud)
+- Auth0 account
+- Google Cloud account (for Gemini API)
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd HackThe6ix2025
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm run install:all
+   ```
+
+3. **Set up environment variables**
+
+   Backend (`.env` in `backend/` directory):
+   ```env
+   AUTH0_DOMAIN=your-domain.auth0.com
+   AUTH0_CLIENT_ID=your-client-id
+   AUTH0_CLIENT_SECRET=your-client-secret
+   AUTH0_API_AUDIENCE=your-api-audience
+   MONGODB_URI=mongodb://localhost:27017/hackthe6ix
+   GEMINI_API_KEY=your-gemini-api-key
+   FLASK_SECRET_KEY=your-secret-key
+   FLASK_ENV=development
+   ```
+
+   Frontend (`.env` in `frontend/` directory):
+   ```env
+   REACT_APP_AUTH0_DOMAIN=your-domain.auth0.com
+   REACT_APP_AUTH0_CLIENT_ID=your-client-id
+   REACT_APP_AUTH0_AUDIENCE=your-api-audience
+   REACT_APP_API_URL=http://localhost:5000/api
+   ```
+
+4. **Start the development servers**
+   ```bash
+   npm run dev
+   ```
+
+   This will start both:
+   - Backend: http://localhost:5000
+   - Frontend: http://localhost:3000
+
+## 📚 API Documentation
+
+### Authentication Endpoints
+- `GET /api/auth/public` - Public endpoint
+- `GET /api/auth/protected` - Protected endpoint
+- `GET /api/auth/profile` - Get user profile
+
+### Chat Endpoints
+- `GET /api/chat/conversations` - Get user conversations
+- `POST /api/chat/conversations` - Create new conversation
+- `GET /api/chat/conversations/{id}` - Get specific conversation
+- `POST /api/chat/conversations/{id}/messages` - Send message
+- `DELETE /api/chat/conversations/{id}` - Delete conversation
+- `POST /api/chat/generate` - Generate single response
+
+### User Endpoints
+- `POST /api/user/data` - Post user data
+- `GET /api/user/health` - Health check
+
+## 🔧 Development
+
+### Backend Development
 ```bash
-pip install -r requirements.txt
+cd backend
+python run.py
 ```
 
-**Frontend (React):**
+### Frontend Development
 ```bash
-cd auth0-app
-npm install
-```
-
-### 2. Environment Configuration
-
-Create a `.env` file in the root directory with your Auth0 configuration:
-
-```env
-# Flask App Configuration
-APP_SECRET_KEY=your-secret-key-here
-
-# Auth0 Configuration
-AUTH0_DOMAIN=dev-6l1mmvy5gvfsblef.us.auth0.com
-AUTH0_CLIENT_ID=iyuPvHVVRTz45HLnjMVE1Z6gwOVdTDLR
-AUTH0_CLIENT_SECRET=your-auth0-client-secret
-AUTH0_API_AUDIENCE=https://dev-6l1mmvy5gvfsblef.us.auth0.com/api/v2/
-```
-
-### 3. Auth0 Configuration
-
-1. Go to your Auth0 Dashboard
-2. Create a new API or use an existing one
-3. Set the API Audience to: `https://dev-6l1mmvy5gvfsblef.us.auth0.com/api/v2/`
-4. Configure your React application settings:
-   - Allowed Callback URLs: `http://localhost:3000`
-   - Allowed Logout URLs: `http://localhost:3000`
-   - Allowed Web Origins: `http://localhost:3000`
-
-### 4. Run the Application
-
-**Start the Flask Backend:**
-```bash
-python server.py
-```
-The backend will run on `http://localhost:5000`
-
-**Start the React Frontend:**
-```bash
-cd auth0-app
+cd frontend
 npm start
 ```
-The frontend will run on `http://localhost:3000`
 
-## API Endpoints
+### Running Tests
+```bash
+npm run test:backend    # Backend tests
+npm run test:frontend   # Frontend tests
+```
 
-### Public Endpoints (No Authentication Required)
+### Building for Production
+```bash
+npm run build:frontend
+```
 
-- `GET /api/health` - Health check
-- `GET /api/public` - Public data
+## 📖 Detailed Setup Guide
 
-### Protected Endpoints (Require JWT Authentication)
+For detailed setup instructions, including MongoDB, Auth0, and Gemini API configuration, see [docs/setup.md](docs/setup.md).
 
-- `GET /api/protected` - Protected data with user info
-- `GET /api/profile` - User profile from JWT token
-- `POST /api/data` - Post data with authentication
+## 🤝 Contributing
 
-## How It Works
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-### 1. Authentication Flow
+## 📄 License
 
-1. User clicks "Login" in React app
-2. Auth0 handles authentication and returns JWT token
-3. React stores the token and uses it for API calls
-4. Flask verifies JWT tokens using Auth0's public keys
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-### 2. JWT Verification
+## 🏆 HackThe6ix 2025
 
-The Flask backend:
-- Fetches Auth0's public keys from `/.well-known/jwks.json`
-- Verifies JWT signatures using RSA256
-- Validates token audience, issuer, and expiration
-- Extracts user information from the token
+This project was created for HackThe6ix 2025 hackathon. It demonstrates modern web development practices with a focus on AI integration and user experience.
 
-### 3. API Calls
+## 🙏 Acknowledgments
 
-React components use the `useApi` hook to:
-- Automatically include JWT tokens in Authorization headers
-- Handle authentication errors
-- Make authenticated requests to Flask endpoints
-
-## Security Features
-
-- **JWT Verification**: All protected routes verify JWT tokens
-- **Public Key Validation**: Uses Auth0's public keys for signature verification
-- **Token Expiration**: Automatically handles expired tokens
-- **CORS Protection**: Configured for specific origins
-- **Error Handling**: Comprehensive error handling for authentication failures
-
-## Testing the Integration
-
-1. Open `http://localhost:3000` in your browser
-2. Click "Login" to authenticate with Auth0
-3. Use the API Demo section to test different endpoints:
-   - Health Check (public)
-   - Public Data (public)
-   - Protected Data (requires auth)
-   - User Profile (requires auth)
-   - Post Data (requires auth)
-
-## Troubleshooting
-
-### Common Issues
-
-1. **CORS Errors**: Ensure Flask CORS is configured for `http://localhost:3000`
-2. **JWT Verification Failures**: Check Auth0 domain and API audience configuration
-3. **Token Expiration**: The React SDK automatically handles token refresh
-4. **Network Errors**: Ensure both frontend and backend are running
-
-### Debug Mode
-
-The Flask server runs in debug mode by default. Check the console for detailed error messages.
-
-## Dependencies
-
-### Backend
-- Flask
-- PyJWT
-- cryptography
-- flask-cors
-- requests
-- python-dotenv
-
-### Frontend
-- React
-- @auth0/auth0-react
-- axios
-
-## Next Steps
-
-- Add more protected API endpoints
-- Implement role-based access control
-- Add database integration
-- Deploy to production with proper environment variables 
+- Auth0 for authentication services
+- Google for Gemini AI API
+- MongoDB for database services
+- The React and Flask communities 

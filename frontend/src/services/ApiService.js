@@ -37,33 +37,33 @@ export const useApi = () => {
   };
 
   const getPublicData = async () => {
-    return await apiClient.get('/public');
+    return await apiClient.get('/auth/public');
   };
 
   const getProtectedData = async () => {
     return await makeAuthenticatedRequest({
       method: 'GET',
-      url: '/protected',
+      url: '/auth/protected',
     });
   };
 
   const getUserProfile = async () => {
     return await makeAuthenticatedRequest({
       method: 'GET',
-      url: '/profile',
+      url: '/auth/profile',
     });
   };
 
   const postData = async (data) => {
     return await makeAuthenticatedRequest({
       method: 'POST',
-      url: '/data',
+      url: '/user/data',
       data,
     });
   };
 
   const getHealth = async () => {
-    return await apiClient.get('/health');
+    return await apiClient.get('/user/health');
   };
 
   return {
