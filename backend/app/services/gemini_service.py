@@ -97,7 +97,7 @@ class GeminiService:
         """
         try:
             prompt = f"""
-You are a workplace scenario generator. Based on the user's profile, create a realistic but concise workplace situation that they must respond to. Include enough detail to make the situation feel real.
+You are a workplace scenario generator. Based on the user's profile, create a realistic but brief and concise workplace situation that they must respond to. Include enough detail to make the situation feel real.
 
 User Profile:
 - Role: {profile['role']}
@@ -159,8 +159,6 @@ Provide the following sections in your feedback. Do not use any special formatti
    - [Suggestion 1]
    - [Suggestion 2]
 
-5. Revised, More Effective Version:
-"[Your revised response here]"
 
 Format your output clearly, using simple line breaks for separation between sections and bullet points.
 """
