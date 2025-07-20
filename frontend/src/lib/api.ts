@@ -42,6 +42,13 @@ export interface UserProfile {
   updated_at?: string;
 }
 
+export interface OnboardingData {
+  boss_type: string;
+  role?: string;
+  confidence?: number;
+  goals?: string[];
+}
+
 export interface ApiResponse<T = any> {
   data: T;
   status: number;
@@ -132,6 +139,36 @@ export class ApiService {
   static async healthCheck(): Promise<any> {
     const response = await apiClient.get('/user/health');
     return response.data;
+  }
+
+  // Update user onboarding data
+  static async updateOnboardingData(token: string, onboardingData: OnboardingData): Promise<any> {
+    try {
+      const response = await apiClient.post('/user/onboarding', onboardingData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      console.error('API Error in updateOnboardingData:', error.response?.data || error.message);
+      throw error;
+    }
+  }
+
+  // Get user onboarding data
+  static async getOnboardingData(token: string): Promise<any> {
+    try {
+      const response = await apiClient.get('/user/onboarding', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      console.error('API Error in getOnboardingData:', error.response?.data || error.message);
+      throw error;
+    }
   }
 }
 
