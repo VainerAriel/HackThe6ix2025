@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useAuth0 } from '@auth0/auth0-react';
+import { useUser } from '@auth0/nextjs-auth0/client';
 
 const API_BASE_URL = 'http://localhost:5000/api';
 
@@ -13,20 +13,24 @@ const apiClient = axios.create({
 
 // Custom hook for API calls with authentication
 export const useApi = () => {
-  const { getAccessTokenSilently, isAuthenticated } = useAuth0();
+  const { user, error, isLoading } = useUser();
 
   const makeAuthenticatedRequest = async (config) => {
-    if (!isAuthenticated) {
+    if (!user) {
       throw new Error('User not authenticated');
     }
 
     try {
-      const token = await getAccessTokenSilently();
+      // For Next.js Auth0, we need to get the access token from the session
+      // This requires a server-side call or using the session API
+      const response = await fetch('/api/auth/token');
+      const { accessToken } = await response.json();
+      
       const authConfig = {
         ...config,
         headers: {
           ...config.headers,
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       };
       return await apiClient(authConfig);
@@ -72,6 +76,6 @@ export const useApi = () => {
     getUserProfile,
     postData,
     getHealth,
-    isAuthenticated,
+    isAuthenticated: !!user,
   };
 }; 
