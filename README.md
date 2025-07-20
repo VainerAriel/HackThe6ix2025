@@ -69,7 +69,7 @@ HackThe6ix2025/
 ### 1. Clone the Repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/VainerAriel/HackThe6ix2025.git
 cd HackThe6ix2025
 ```
 
