@@ -53,21 +53,25 @@ def init_routes(api_ns):
         @api_ns.response(401, 'Unauthorized', error_model)
         @require_auth
         def get(self):
-            """Get user profile from JWT token"""
+            """Get user profile from JWT token and sync with database"""
             user = g.user
             
-            # Check if user exists in database, create if not
+            # Create or update user in database (upsert operation)
+            # This ensures user data is always synced with Auth0
+            user_obj = User(
+                auth0_id=user.get("sub"),
+                email=user.get("email"),
+                name=user.get("name"),
+                picture=user.get("picture")
+            )
+            
+            # Use upsert to create or update user
+            success = db_service.upsert_user(user_obj)
+            if not success:
+                api_ns.abort(500, "Failed to sync user data with database")
+            
+            # Get the user from database to ensure we have the latest data
             db_user = db_service.get_user_by_auth0_id(user.get("sub"))
-            if not db_user:
-                # Create new user in database
-                new_user = User(
-                    auth0_id=user.get("sub"),
-                    email=user.get("email"),
-                    name=user.get("name"),
-                    picture=user.get("picture")
-                )
-                db_service.create_user(new_user)
-                db_user = new_user
             
             return {
                 "user_id": user.get("sub"),
@@ -76,7 +80,8 @@ def init_routes(api_ns):
                 "nickname": user.get("nickname"),
                 "picture": user.get("picture"),
                 "email_verified": user.get("email_verified", False),
-                "created_at": db_user.created_at.isoformat() if hasattr(db_user, 'created_at') else None
+                "created_at": db_user.created_at.isoformat() if db_user and hasattr(db_user, 'created_at') else None,
+                "updated_at": db_user.updated_at.isoformat() if db_user and hasattr(db_user, 'updated_at') else None
             }
 
     @api_ns.route('/public')
@@ -125,4 +130,65 @@ def init_routes(api_ns):
                 "audience": audience,
                 "authorization_url": f"https://{domain}/authorize",
                 "token_url": f"https://{domain}/oauth/token"
+            }
+
+    @api_ns.route('/sync')
+    class UserSync(Resource):
+        @api_ns.doc('sync_user', security='apikey')
+        @api_ns.response(200, 'Success', user_model)
+        @api_ns.response(401, 'Unauthorized', error_model)
+        @api_ns.response(500, 'Server Error', error_model)
+        @require_auth
+        def post(self):
+            """Sync user data with database (useful for cross-device login)"""
+            user = g.user
+            
+            # Create or update user in database
+            user_obj = User(
+                auth0_id=user.get("sub"),
+                email=user.get("email"),
+                name=user.get("name"),
+                picture=user.get("picture")
+            )
+            
+            success = db_service.upsert_user(user_obj)
+            if not success:
+                api_ns.abort(500, "Failed to sync user data")
+            
+            # Get the synced user data
+            db_user = db_service.get_user_by_auth0_id(user.get("sub"))
+            
+            return {
+                "user_id": user.get("sub"),
+                "email": user.get("email"),
+                "name": user.get("name"),
+                "nickname": user.get("nickname"),
+                "picture": user.get("picture"),
+                "email_verified": user.get("email_verified", False),
+                "created_at": db_user.created_at.isoformat() if db_user and hasattr(db_user, 'created_at') else None,
+                "updated_at": db_user.updated_at.isoformat() if db_user and hasattr(db_user, 'updated_at') else None,
+                "synced": True
+            }
+
+    @api_ns.route('/status')
+    class UserStatus(Resource):
+        @api_ns.doc('get_user_status', security='apikey')
+        @api_ns.response(200, 'Success')
+        @api_ns.response(401, 'Unauthorized', error_model)
+        @require_auth
+        def get(self):
+            """Get user status in database"""
+            user = g.user
+            auth0_id = user.get("sub")
+            
+            status = db_service.get_user_status(auth0_id)
+            
+            return {
+                "user_id": auth0_id,
+                "exists_in_database": status.get("exists", False),
+                "email": status.get("email"),
+                "name": status.get("name"),
+                "created_at": status.get("created_at"),
+                "updated_at": status.get("updated_at"),
+                "error": status.get("error")
             } 
