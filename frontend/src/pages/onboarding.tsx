@@ -493,7 +493,7 @@ const Onboarding: React.FC = () => {
                 </div>
               ))}
             </div>
-          </div>
+                  </div>
         );
 
       case 11:
@@ -545,40 +545,40 @@ const Onboarding: React.FC = () => {
               sender={msg.role === 'user' ? 'user' : 'ai'} 
               text={msg.content} 
             />
-          </div>
-        ))}
-        {loading && (
-          <div className="text-center text-[#6b7280]">Loading...</div>
-        )}
-        {error && (
-          <div className="text-center text-red-500">{error}</div>
-        )}
-      </div>
+                </div>
+              ))}
+              {loading && (
+                <div className="text-center text-[#6b7280]">Loading...</div>
+              )}
+              {error && (
+                <div className="text-center text-red-500">{error}</div>
+              )}
+            </div>
       
-      <div className="mt-4 flex items-center gap-3">
-        <input
-          type="text"
+            <div className="mt-4 flex items-center gap-3">
+              <input
+                type="text"
           value={userInput}
           onChange={(e) => setUserInput(e.target.value)}
-          placeholder="Type your response here..."
-          className="flex-1 border border-[#e5e7eb] rounded-lg p-4 text-[#374151] placeholder-[#9ca3af] focus:outline-none focus:ring-2 focus:ring-[#8b5cf6] focus:border-[#8b5cf6] transition-all text-base"
-          onKeyPress={(e) => {
-            if (e.key === 'Enter') {
+                placeholder="Type your response here..."
+                className="flex-1 border border-[#e5e7eb] rounded-lg p-4 text-[#374151] placeholder-[#9ca3af] focus:outline-none focus:ring-2 focus:ring-[#8b5cf6] focus:border-[#8b5cf6] transition-all text-base"
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
               handleContinueRoleplay();
-            }
-          }}
-        />
-        <button
+                  }
+                }}
+              />
+              <button
           onClick={handleContinueRoleplay}
           disabled={loading || !userInput.trim()}
-          className={`px-6 py-4 rounded-lg font-semibold shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#8b5cf6] focus:ring-offset-2 focus:ring-offset-white
+                className={`px-6 py-4 rounded-lg font-semibold shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#8b5cf6] focus:ring-offset-2 focus:ring-offset-white
             ${userInput.trim() && !loading ? 'bg-gradient-to-r from-[#8b5cf6] to-[#a855f7] text-white hover:from-[#7c3aed] hover:to-[#9333ea]' : 'bg-[#f3f4f6] text-[#9ca3af] cursor-not-allowed'}`}
-        >
-          Send
-        </button>
-      </div>
-    </div>
-  );
+              >
+                Send
+              </button>
+            </div>
+          </div>
+        );
 
   // Render results
   const renderResults = () => (
@@ -635,7 +635,7 @@ const Onboarding: React.FC = () => {
     } else if (currentStep === totalSteps + 2) {
       return renderResults();
     }
-    return null;
+        return null;
   };
 
   // Check if current step is complete

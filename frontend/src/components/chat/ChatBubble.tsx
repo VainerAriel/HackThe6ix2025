@@ -3,14 +3,14 @@ const formatResponse = (text: string) => {
   if (!text) return '';
   
   // Split by common section markers
-  const sections = text.split(/(?=\d+\.|Overall Critique:|Score|Two Strengths:|Two Suggestions for Improvement:|Revised, More Effective Version:)/);
+  const sections = text.split(/(?=\d+\.|Overall Critique:|Two Strengths:|Two Suggestions for Improvement:|Revised, More Effective Version:)/);
   
   return sections.map((section, index) => {
     const trimmedSection = section.trim();
     if (!trimmedSection) return null;
     
     // Check if this is a numbered section or heading
-    const isHeading = /^\d+\.|Overall Critique:|Score|Two Strengths:|Two Suggestions for Improvement:|Revised, More Effective Version:/.test(trimmedSection);
+    const isHeading = /^\d+\.|Overall Critique:|Two Strengths:|Two Suggestions for Improvement:|Revised, More Effective Version:/.test(trimmedSection);
     
     if (isHeading) {
       // Extract the heading and content
