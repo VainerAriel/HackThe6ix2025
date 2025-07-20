@@ -3,6 +3,24 @@ import { useRouter } from "next/router";
 import { useEffect } from "react";
 import Link from "next/link";
 
+// Helper function to get the best display name from Auth0 user
+const getDisplayName = (user: any) => {
+    // Priority order: nickname > name > email username > 'User'
+    if (user.nickname && user.nickname.trim()) {
+        return user.nickname;
+    }
+    if (user.name && user.name.trim()) {
+        return user.name;
+    }
+    if (user.email) {
+        // Extract username from email (before @)
+        const emailUsername = user.email.split('@')[0];
+        // Capitalize first letter
+        return emailUsername.charAt(0).toUpperCase() + emailUsername.slice(1);
+    }
+    return 'User';
+};
+
 export default function Dashboard() {
     const { user: auth0User, isLoading: auth0Loading } = useUser();
     const router = useRouter();
@@ -50,7 +68,7 @@ export default function Dashboard() {
                 <div className="text-center max-w-md">
                     {/* Welcome Message */}
                     <h1 className="text-5xl font-semibold text-[#374151] mb-4 tracking-wide">
-                        Welcome, {auth0User.nickname ? auth0User.nickname : auth0User.name}
+                        Welcome, {getDisplayName(auth0User)}
                     </h1>
 
                     {/* Slogan */}
