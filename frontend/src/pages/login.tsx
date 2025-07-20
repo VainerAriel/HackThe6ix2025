@@ -1,6 +1,27 @@
 import Link from "next/link";
+import { useUser } from "@auth0/nextjs-auth0/client";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
 
 export default function LoginPage() {
+  const { user, isLoading } = useUser();
+  const router = useRouter();
+
+  // Redirect to dashboard if user is already logged in
+  useEffect(() => {
+    if (user && !isLoading) {
+      router.push('/dashboard');
+    }
+  }, [user, isLoading, router]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#1c1c1c] flex items-center justify-center">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#1c1c1c] flex items-center justify-center px-4">
       <div className="bg-gray-900 rounded-2xl shadow-xl max-w-md w-full p-8 space-y-8 text-center border border-gray-800">
@@ -13,10 +34,8 @@ export default function LoginPage() {
           className="w-20 h-20 mx-auto rounded-full shadow-lg border-4 border-gray-800 bg-[#232323]"
         />
 
-        <Link href="/api/auth/login" legacyBehavior>
-          <a className="w-full inline-block px-6 py-3 mt-4 bg-[#facc15] text-gray-900 font-semibold rounded-lg shadow-md hover:bg-yellow-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#facc15] focus:ring-offset-2 focus:ring-offset-gray-900">
-            Log in with Auth0
-          </a>
+        <Link href="/api/auth/login" className="w-full inline-block px-6 py-3 mt-4 bg-[#facc15] text-gray-900 font-semibold rounded-lg shadow-md hover:bg-yellow-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#facc15] focus:ring-offset-2 focus:ring-offset-gray-900">
+          Log in with Auth0
         </Link>
 
         <p className="text-xs text-gray-500 mt-2">Secure login powered by <span className="text-indigo-400 font-medium">Auth0</span></p>
