@@ -81,6 +81,12 @@ Run the setup script to install all dependencies:
 .\scripts\setup.ps1
 ```
 
+**OR** skip setup and let the start script handle it automatically:
+
+```powershell
+.\scripts\start-dev.ps1
+```
+
 ### 3. Manual Setup
 
 #### Install Dependencies
@@ -127,6 +133,8 @@ NEXT_PUBLIC_API_URL=http://localhost:5000/api
 ```powershell
 .\scripts\start-dev.ps1
 ```
+
+*Note: This script will automatically install dependencies if they're missing.*
 
 #### Option B: Manual Start
 
