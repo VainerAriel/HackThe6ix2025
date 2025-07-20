@@ -50,7 +50,7 @@ export default function Dashboard() {
                 <div className="text-center max-w-md">
                     {/* Welcome Message */}
                     <h1 className="text-5xl font-semibold text-[#374151] mb-4 tracking-wide">
-                        Welcome, {auth0User.name}
+                        Welcome, {auth0User.nickname ? auth0User.nickname : auth0User.name}
                     </h1>
 
                     {/* Slogan */}
