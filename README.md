@@ -189,6 +189,13 @@ npm run lint:frontend
 3. **Feedback** - Receive comprehensive analysis and coaching tips
 4. **Practice** - Repeat and improve your communication skills
 
+👥 Team
+Created for HackThe6ix 2025 by:
+
+- Ashmaan Sohail - Incoming 2nd Year Computer Engineering @ Queen's University
+- Ariel Vainer - Incoming 2nd Year Computer Science @ University of Waterloo
+- Brody Honigman Deltoff - Incoming 2nd Year Computer Science @ University of Toronto
+
 ## 🤝 Contributing
 
 1. Fork the repository
