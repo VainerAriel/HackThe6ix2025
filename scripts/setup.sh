@@ -92,4 +92,4 @@ echo "   NEXT_PUBLIC_API_URL=http://localhost:5000/api"
 
 echo ""
 echo "🎉 Setup Complete!"
-echo "Run 'npm run dev' to start the development servers" 
+echo "Run 'npm run dev' to start the development servers"

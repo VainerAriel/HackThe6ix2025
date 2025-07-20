@@ -34,7 +34,7 @@ try {
     exit 1
 }
 
-Write-Host "📦 Installing Frontend Dependencies..." -ForegroundColor Yellow
+Write-Host "`n📦 Installing Frontend Dependencies..." -ForegroundColor Yellow
 Set-Location "frontend"
 try {
     npm install
@@ -44,7 +44,7 @@ try {
     exit 1
 }
 
-Write-Host "🐍 Installing Backend Dependencies..." -ForegroundColor Yellow
+Write-Host "`n🐍 Installing Backend Dependencies..." -ForegroundColor Yellow
 Set-Location "../backend"
 try {
     pip install -r requirements.txt
@@ -57,7 +57,7 @@ try {
 # Return to root directory
 Set-Location ".."
 
-Write-Host "📝 Environment Setup Instructions:" -ForegroundColor Cyan
+Write-Host "`n📝 Environment Setup Instructions:" -ForegroundColor Cyan
 Write-Host "=================================" -ForegroundColor Cyan
 Write-Host "1. Create backend/.env file with your API keys:" -ForegroundColor White
 Write-Host "   AUTH0_DOMAIN=your-domain.auth0.com" -ForegroundColor Gray
@@ -68,7 +68,7 @@ Write-Host "   GEMINI_API_KEY=your-gemini-api-key" -ForegroundColor Gray
 Write-Host "   FLASK_SECRET_KEY=your-secret-key" -ForegroundColor Gray
 Write-Host "   FLASK_ENV=development" -ForegroundColor Gray
 
-Write-Host "2. Create frontend/.env.local file with your Auth0 config:" -ForegroundColor White
+Write-Host "`n2. Create frontend/.env.local file with your Auth0 config:" -ForegroundColor White
 Write-Host "   NEXT_PUBLIC_AUTH0_SECRET=your-auth0-secret" -ForegroundColor Gray
 Write-Host "   NEXT_PUBLIC_AUTH0_ISSUER_BASE_URL=https://your-domain.auth0.com" -ForegroundColor Gray
 Write-Host "   NEXT_PUBLIC_AUTH0_BASE_URL=http://localhost:3000" -ForegroundColor Gray
@@ -76,5 +76,5 @@ Write-Host "   NEXT_PUBLIC_AUTH0_CLIENT_ID=your-client-id" -ForegroundColor Gray
 Write-Host "   NEXT_PUBLIC_AUTH0_CLIENT_SECRET=your-client-secret" -ForegroundColor Gray
 Write-Host "   NEXT_PUBLIC_API_URL=http://localhost:5000/api" -ForegroundColor Gray
 
-Write-Host "🎉 Setup Complete!" -ForegroundColor Green
-Write-Host "Run .\scripts\start-dev.ps1 to start the development servers" -ForegroundColor Cyan 
+Write-Host "`n🎉 Setup Complete!" -ForegroundColor Green
+Write-Host "Run .\scripts\start-dev.ps1 to start the development servers" -ForegroundColor Cyan
