@@ -31,10 +31,7 @@ def init_routes(app):
         
         if user_data:
             return jsonify({
-                "boss_type": user_data.boss_type,
-                "role": user_data.role,
-                "confidence": user_data.confidence,
-                "goals": user_data.goals,
+                "QuestionnaireData": user_data.QuestionnaireData,
                 "user_id": auth0_id
             })
         else:
@@ -49,8 +46,8 @@ def init_routes(app):
         auth0_id = user.get("sub")
         data = request.get_json()
         
-        if not data or 'boss_type' not in data:
-            return jsonify({"error": "boss_type is required"}), 400
+        if not data or 'QuestionnaireData' not in data:
+            return jsonify({"error": "QuestionnaireData is required"}), 400
         
         # Get existing user or create new one
         existing_user = db_service.get_user_by_auth0_id(auth0_id)
@@ -58,16 +55,8 @@ def init_routes(app):
         if existing_user:
             # Update existing user
             updates = {
-                'boss_type': data['boss_type']
+                'QuestionnaireData': data['QuestionnaireData']
             }
-            
-            # Add optional fields if provided
-            if 'role' in data:
-                updates['role'] = data['role']
-            if 'confidence' in data:
-                updates['confidence'] = data['confidence']
-            if 'goals' in data:
-                updates['goals'] = data['goals']
             
             success = db_service.update_user(auth0_id, updates)
         else:
@@ -75,13 +64,11 @@ def init_routes(app):
             from ..models.user import User
             new_user = User(
                 auth0_id=auth0_id,
-                email=user.get('email', ''),
                 name=user.get('name', ''),
+                email=user.get('email', ''),
+                username=user.get('username', ''),
                 picture=user.get('picture'),
-                boss_type=data['boss_type'],
-                role=data.get('role'),
-                confidence=data.get('confidence'),
-                goals=data.get('goals', [])
+                QuestionnaireData=data['QuestionnaireData']
             )
             success = db_service.upsert_user(new_user)
         

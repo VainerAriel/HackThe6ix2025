@@ -2,30 +2,25 @@ from datetime import datetime
 from typing import Optional, Dict, Any, List
 
 class User:
-    def __init__(self, auth0_id: str, email: str, name: str, picture: Optional[str] = None, 
-                 boss_type: Optional[str] = None, role: Optional[str] = None, 
-                 confidence: Optional[int] = None, goals: Optional[List[str]] = None):
+    def __init__(self, auth0_id: str, name: str, email: str, username: str, 
+                 picture: Optional[str] = None, QuestionnaireData: Optional[Dict[str, Any]] = None):
         self.auth0_id = auth0_id
-        self.email = email
         self.name = name
+        self.email = email
+        self.username = username
         self.picture = picture
-        self.boss_type = boss_type
-        self.role = role
-        self.confidence = confidence
-        self.goals = goals or []
+        self.QuestionnaireData = QuestionnaireData or {}
         self.created_at = datetime.utcnow()
         self.updated_at = datetime.utcnow()
     
     def to_dict(self) -> Dict[str, Any]:
         return {
             'auth0_id': self.auth0_id,
-            'email': self.email,
             'name': self.name,
+            'email': self.email,
+            'username': self.username,
             'picture': self.picture,
-            'boss_type': self.boss_type,
-            'role': self.role,
-            'confidence': self.confidence,
-            'goals': self.goals,
+            'QuestionnaireData': self.QuestionnaireData,
             'created_at': self.created_at,
             'updated_at': self.updated_at
         }
@@ -34,14 +29,15 @@ class User:
     def from_dict(cls, data: Dict[str, Any]) -> 'User':
         user = cls(
             auth0_id=data['auth0_id'],
-            email=data['email'],
             name=data['name'],
+            email=data['email'],
+            username=data['username'],
             picture=data.get('picture'),
-            boss_type=data.get('boss_type'),
-            role=data.get('role'),
-            confidence=data.get('confidence'),
-            goals=data.get('goals', [])
+            QuestionnaireData=data.get('QuestionnaireData', {})
         )
-        user.created_at = data.get('created_at', datetime.utcnow())
-        user.updated_at = data.get('updated_at', datetime.utcnow())
+        # Set timestamps from data if available, otherwise use current time
+        if 'created_at' in data:
+            user.created_at = data['created_at']
+        if 'updated_at' in data:
+            user.updated_at = data['updated_at']
         return user 

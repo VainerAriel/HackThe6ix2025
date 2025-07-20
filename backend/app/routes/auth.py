@@ -17,8 +17,9 @@ def init_routes(app):
         # This ensures user data is always synced with Auth0
         user_obj = User(
             auth0_id=user.get("sub"),
-            email=user.get("email"),
             name=user.get("name"),
+            email=user.get("email"),
+            username=user.get("username"),
             picture=user.get("picture")
         )
         
@@ -32,11 +33,10 @@ def init_routes(app):
         
         return jsonify({
             "user_id": user.get("sub"),
-            "email": user.get("email"),
             "name": user.get("name"),
-            "nickname": user.get("nickname"),
+            "email": user.get("email"),
+            "username": user.get("username"),
             "picture": user.get("picture"),
-            "email_verified": user.get("email_verified", False),
             "created_at": db_user.created_at.isoformat() if db_user and hasattr(db_user, 'created_at') else None,
             "updated_at": db_user.updated_at.isoformat() if db_user and hasattr(db_user, 'updated_at') else None
         })
@@ -60,8 +60,9 @@ def init_routes(app):
             "message": "This is a protected endpoint",
             "user": {
                 "sub": user.get("sub"),
+                "name": user.get("name"),
                 "email": user.get("email"),
-                "name": user.get("name")
+                "username": user.get("username")
             },
             "timestamp": "2024-01-01T00:00:00Z"
         })
@@ -70,9 +71,9 @@ def init_routes(app):
     @app.route('/api/auth/config', methods=['GET'])
     def get_auth0_config():
         """Get Auth0 configuration for frontend authentication"""
-        domain = os.getenv("AUTH0_DOMAIN", "dev-6l1mmvy5gvfsblef.us.auth0.com")
-        client_id = os.getenv("AUTH0_CLIENT_ID", "iyuPvHVVRTz45HLnjMVE1Z6gwOVdTDLR")
-        audience = os.getenv("AUTH0_API_AUDIENCE", "https://dev-6l1mmvy5gvfsblef.us.auth0.com/api/v2/")
+        domain = os.getenv("AUTH0_DOMAIN")
+        client_id = os.getenv("AUTH0_CLIENT_ID")
+        audience = os.getenv("AUTH0_API_AUDIENCE")
         
         return jsonify({
             "domain": domain,
@@ -92,8 +93,9 @@ def init_routes(app):
         # Create or update user in database
         user_obj = User(
             auth0_id=user.get("sub"),
-            email=user.get("email"),
             name=user.get("name"),
+            email=user.get("email"),
+            username=user.get("username"),
             picture=user.get("picture")
         )
         
@@ -106,11 +108,10 @@ def init_routes(app):
         
         return jsonify({
             "user_id": user.get("sub"),
-            "email": user.get("email"),
             "name": user.get("name"),
-            "nickname": user.get("nickname"),
+            "email": user.get("email"),
+            "username": user.get("username"),
             "picture": user.get("picture"),
-            "email_verified": user.get("email_verified", False),
             "created_at": db_user.created_at.isoformat() if db_user and hasattr(db_user, 'created_at') else None,
             "updated_at": db_user.updated_at.isoformat() if db_user and hasattr(db_user, 'updated_at') else None,
             "synced": True
@@ -129,8 +130,9 @@ def init_routes(app):
         return jsonify({
             "user_id": auth0_id,
             "exists_in_database": status.get("exists", False),
-            "email": status.get("email"),
             "name": status.get("name"),
+            "email": status.get("email"),
+            "username": status.get("username"),
             "created_at": status.get("created_at"),
             "updated_at": status.get("updated_at"),
             "error": status.get("error")

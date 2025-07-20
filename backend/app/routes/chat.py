@@ -175,47 +175,128 @@ def init_routes(app):
         else:
             return jsonify({"error": f"Failed to generate response: {response['error']}"}), 500
 
-    # Generate workplace scenario
+    # NEW: Start roleplay session with comprehensive profile
+    @app.route('/api/chat/start_roleplay', methods=['POST'])
+    @require_auth
+    def start_roleplay():
+        """Start a new roleplay session based on comprehensive user profile"""
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'error': 'No data provided'}), 400
+
+        # New comprehensive required fields
+        required_fields = [
+            'scenario_type', 'relationship', 'communication_style', 
+            'job_level', 'industry', 'specific_goal', 'challenge_level', 
+            'time_constraint', 'stakes', 'personal_style', 'past_experience'
+        ]
+        
+        missing_fields = [field for field in required_fields if field not in data]
+        if missing_fields:
+            return jsonify({
+                'success': False, 
+                'error': f'Missing required fields: {", ".join(missing_fields)}'
+            }), 400
+
+        result = gemini_service.generate_scenario_and_roleplay(data)
+        
+        if result['success']:
+            # Store the roleplay context in the response for continued conversation
+            result['profile'] = data  # Include the original profile for later use
+            
+        return jsonify(result)
+
+    # NEW: Continue roleplay conversation
+    @app.route('/api/chat/continue_roleplay', methods=['POST'])
+    @require_auth  
+    def continue_roleplay():
+        """Continue an ongoing roleplay conversation"""
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'error': 'No data provided'}), 400
+
+        required_fields = ['roleplay_context', 'conversation_history']
+        missing_fields = [field for field in required_fields if field not in data]
+        if missing_fields:
+            return jsonify({
+                'success': False,
+                'error': f'Missing required fields: {", ".join(missing_fields)}'
+            }), 400
+
+        result = gemini_service.continue_roleplay(
+            data['roleplay_context'], 
+            data['conversation_history']
+        )
+        return jsonify(result)
+
+    # NEW: End roleplay and get comprehensive critique
+    @app.route('/api/chat/end_roleplay', methods=['POST'])
+    @require_auth
+    def end_roleplay():
+        """End roleplay session and provide comprehensive feedback"""
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'error': 'No data provided'}), 400
+
+        required_fields = ['profile', 'conversation_history']
+        missing_fields = [field for field in required_fields if field not in data]
+        if missing_fields:
+            return jsonify({
+                'success': False,
+                'error': f'Missing required fields: {", ".join(missing_fields)}'
+            }), 400
+
+        result = gemini_service.end_roleplay_and_critique(
+            data['profile'], 
+            data['conversation_history']
+        )
+        return jsonify(result)
+
+    # BACKWARD COMPATIBILITY: Keep old generate_scenario endpoint
     @app.route('/api/chat/generate_scenario', methods=['POST'])
     @require_auth
     def generate_scenario():
-        """Generate a workplace scenario based on user profile"""
+        """DEPRECATED: Generate a workplace scenario based on user profile (old format)"""
         data = request.get_json()
         if not data:
             return jsonify({'success': False, 'error': 'No data provided'}), 400
 
-        required_fields = ['role', 'boss_personality', 'goal', 'confidence']
-        if not all(field in data for field in required_fields):
-            return jsonify({'success': False, 'error': 'Missing required fields'}), 400
+        # Check if this is the old format or new format
+        old_format_fields = ['role', 'boss_personality', 'goal', 'confidence']
+        if all(field in data for field in old_format_fields):
+            # Old format - convert confidence to integer and use old method
+            try:
+                data['confidence'] = int(data['confidence'])
+            except ValueError:
+                return jsonify({'success': False, 'error': 'Confidence must be an integer'}), 400
+            
+            result = gemini_service.generate_scenario(data)
+            return jsonify(result)
+        else:
+            # New format - redirect to new method
+            return start_roleplay()
 
-        # Convert confidence to integer
-        try:
-            data['confidence'] = int(data['confidence'])
-        except ValueError:
-            return jsonify({'success': False, 'error': 'Confidence must be an integer'}), 400
-
-        result = gemini_service.generate_scenario(data)
-        return jsonify(result)
-
-    # Critique user response
+    # BACKWARD COMPATIBILITY: Keep old critique_response endpoint  
     @app.route('/api/chat/critique_response', methods=['POST'])
     @require_auth
     def critique_response():
-        """Critique a user's response to a scenario"""
+        """DEPRECATED: Critique a user's response to a scenario (old format)"""
         data = request.get_json()
         if not data:
             return jsonify({'success': False, 'error': 'No data provided'}), 400
 
-        required_fields = ['scenario', 'user_input']
-        if not all(field in data for field in required_fields):
-            return jsonify({'success': False, 'error': 'Missing required fields'}), 400
-
-        result = gemini_service.critique_response(data['scenario'], data['user_input'])
-        return jsonify(result)
+        # Check if this is old format (scenario + user_input) or new format
+        if 'scenario' in data and 'user_input' in data:
+            # Old format
+            result = gemini_service.critique_response(data['scenario'], data['user_input'])
+            return jsonify(result)
+        else:
+            # New format - redirect to end_roleplay
+            return end_roleplay()
 
     # Get model information
     @app.route('/api/chat/model_info', methods=['GET'])
     def model_info():
         """Get information about the Gemini model"""
         result = gemini_service.get_model_info()
-        return jsonify(result) 
+        return jsonify(result)
