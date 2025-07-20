@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useRouter } from 'next/router';
 import ProgressBar from '../components/onboarding/ProgressBar';
 import ChatBubble from '../components/chat/ChatBubble';
 
@@ -88,6 +89,8 @@ const API_BASE_URL = 'http://localhost:5000';
 
 // Main Onboarding component
 const Onboarding: React.FC = () => {
+  const router = useRouter();
+  
   // State for form data
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -647,6 +650,19 @@ const Onboarding: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center p-4 font-sans">
       <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-4xl border border-[#e5e7eb]">
+        {/* Header with Back to Dashboard button */}
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-[#8b5cf6] to-[#a855f7] bg-clip-text text-transparent">
+            PitchPerfect
+          </h1>
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="px-4 py-2 bg-transparent border border-[#e5e7eb] text-[#6b7280] rounded-lg hover:bg-[#f3f4f6] hover:border-[#d1d5db] transition-all duration-200"
+          >
+            Back to Dashboard
+          </button>
+        </div>
+        
         {currentStep <= totalSteps && (
           <ProgressBar currentStep={currentStep} totalSteps={totalSteps} />
         )}
