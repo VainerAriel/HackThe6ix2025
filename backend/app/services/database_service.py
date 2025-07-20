@@ -8,7 +8,7 @@ import os
 
 class DatabaseService:
     def __init__(self, mongo_uri: Optional[str] = None):
-        self.mongo_uri = mongo_uri or os.getenv("MONGODB_URI", "mongodb://localhost:27017/hackthe6ix")
+        self.mongo_uri = mongo_uri or os.getenv("MONGODB_URI")
         self.client: Optional[MongoClient] = None
         self.db: Optional[Database] = None
         self.users_collection: Optional[Collection] = None
@@ -50,11 +50,13 @@ class DatabaseService:
         try:
             if self.client is None:
                 self.connect()
+                
             # Test the connection
             self.client.admin.command('ping')
         except Exception as e:
             print(f"MongoDB connection lost, reconnecting: {e}")
             self.connect()
+            
     
     def disconnect(self):
         """Disconnect from MongoDB"""
@@ -91,10 +93,9 @@ class DatabaseService:
             from datetime import datetime
             return User(
                 auth0_id=auth0_id,
-                email="user@example.com",
                 name="User",
-                created_at=datetime.utcnow(),
-                updated_at=datetime.utcnow()
+                email="user@example.com",
+                username="user"
             )
     
     def user_exists(self, auth0_id: str) -> bool:
@@ -116,14 +117,15 @@ class DatabaseService:
             self.ensure_connection()
             user_data = self.users_collection.find_one(
                 {"auth0_id": auth0_id},
-                {"auth0_id": 1, "email": 1, "name": 1, "created_at": 1, "updated_at": 1}
+                {"auth0_id": 1, "name": 1,"email": 1, "username": 1, "created_at": 1, "updated_at": 1}
             )
             if user_data:
                 return {
                     "exists": True,
                     "auth0_id": user_data.get("auth0_id"),
-                    "email": user_data.get("email"),
                     "name": user_data.get("name"),
+                    "email": user_data.get("email"),
+                    "username": user_data.get("username"),
                     "created_at": user_data.get("created_at"),
                     "updated_at": user_data.get("updated_at")
                 }
