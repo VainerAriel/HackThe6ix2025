@@ -173,4 +173,49 @@ def init_routes(app):
                 "model": response["model"]
             })
         else:
-            return jsonify({"error": f"Failed to generate response: {response['error']}"}), 500 
+            return jsonify({"error": f"Failed to generate response: {response['error']}"}), 500
+
+    # Generate workplace scenario
+    @app.route('/api/chat/generate_scenario', methods=['POST'])
+    @require_auth
+    def generate_scenario():
+        """Generate a workplace scenario based on user profile"""
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'error': 'No data provided'}), 400
+
+        required_fields = ['role', 'boss_personality', 'goal', 'confidence']
+        if not all(field in data for field in required_fields):
+            return jsonify({'success': False, 'error': 'Missing required fields'}), 400
+
+        # Convert confidence to integer
+        try:
+            data['confidence'] = int(data['confidence'])
+        except ValueError:
+            return jsonify({'success': False, 'error': 'Confidence must be an integer'}), 400
+
+        result = gemini_service.generate_scenario(data)
+        return jsonify(result)
+
+    # Critique user response
+    @app.route('/api/chat/critique_response', methods=['POST'])
+    @require_auth
+    def critique_response():
+        """Critique a user's response to a scenario"""
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'error': 'No data provided'}), 400
+
+        required_fields = ['scenario', 'user_input']
+        if not all(field in data for field in required_fields):
+            return jsonify({'success': False, 'error': 'Missing required fields'}), 400
+
+        result = gemini_service.critique_response(data['scenario'], data['user_input'])
+        return jsonify(result)
+
+    # Get model information
+    @app.route('/api/chat/model_info', methods=['GET'])
+    def model_info():
+        """Get information about the Gemini model"""
+        result = gemini_service.get_model_info()
+        return jsonify(result) 
