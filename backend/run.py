@@ -3,6 +3,7 @@ from app.services.database_service import db_service
 from flask import request, jsonify # Import request and jsonify
 from flask_cors import CORS # Import CORS
 from app.services.gemini_service import GeminiService # Import GeminiService
+import os
 
 # Initialize GeminiService globally
 gemini_service = GeminiService()
@@ -80,4 +81,8 @@ def close_database(error):
     db_service.disconnect()
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    port = int(app.config.get('PORT', 5000))
+    debug_mode = app.config.get('DEBUG', True)  # Default to True for safety
+    
+    print(f"Starting Flask app with debug={debug_mode}, port={port}")
+    app.run(debug=debug_mode, port=port)
