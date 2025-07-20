@@ -1,13 +1,14 @@
 import React from "react";
-import { useAuth0 } from "@auth0/auth0-react";
+import { useUser } from '@auth0/nextjs-auth0/client';
 
 const Profile = () => {
-  const { user, isAuthenticated, isLoading } = useAuth0();
+  const { user, error, isLoading } = useUser();
 
   if (isLoading) return <div>Loading ...</div>;
+  if (error) return <div>Error: {error.message}</div>;
 
   return (
-    isAuthenticated && (
+    user && (
       <div>
         <img src={user.picture} alt={user.name} style={{ width: 50, borderRadius: "50%" }} />
         <h2>{user.name}</h2>

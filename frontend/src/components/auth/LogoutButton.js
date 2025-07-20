@@ -1,13 +1,16 @@
 import React from "react";
-import { useAuth0 } from "@auth0/auth0-react";
+import { useUser } from '@auth0/nextjs-auth0/client';
+import Link from 'next/link';
 
 const LogoutButton = () => {
-  const { logout } = useAuth0();
+  const { user } = useUser();
 
   return (
-    <button onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}>
-      Log Out
-    </button>
+    <Link href="/api/auth/logout">
+      <button>
+        Log Out
+      </button>
+    </Link>
   );
 };
 

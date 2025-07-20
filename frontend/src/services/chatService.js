@@ -1,6 +1,4 @@
-import { getAccessTokenSilently } from '@auth0/auth0-react';
-
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 class ChatService {
     constructor() {
@@ -9,9 +7,12 @@ class ChatService {
 
     async getAuthHeaders() {
         try {
-            const token = await getAccessTokenSilently();
+            // For Next.js Auth0, we need to get the access token from the session
+            const response = await fetch('/api/auth/token');
+            const { accessToken } = await response.json();
+            
             return {
-                'Authorization': `Bearer ${token}`,
+                'Authorization': `Bearer ${accessToken}`,
                 'Content-Type': 'application/json',
             };
         } catch (error) {
