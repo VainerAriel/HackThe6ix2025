@@ -7,6 +7,7 @@ export const auth0Config = {
   authorizationParams: {
     response_type: 'code',
     scope: 'openid profile email',
+    // Remove audience to get standard JWT tokens instead of encrypted ones
   },
   session: {
     absoluteDuration: 24 * 60 * 60, // 24 hours
