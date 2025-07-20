@@ -28,7 +28,7 @@ export default function ChatWindow() {
   return (
     <div className="max-w-3xl mx-auto space-y-4">
       <ScenarioCard />
-      <div className="bg-gray-800 rounded-lg p-4 max-h-[60vh] overflow-y-auto space-y-2">
+      <div className="bg-white rounded-lg p-4 max-h-[60vh] overflow-y-auto space-y-2 border border-[#e5e7eb] shadow-lg">
         {messages.map((msg, i) => (
           <ChatBubble key={i} sender={msg.sender} text={msg.text} />
         ))}

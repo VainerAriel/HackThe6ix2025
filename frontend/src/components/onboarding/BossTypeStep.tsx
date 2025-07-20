@@ -39,28 +39,28 @@ interface Props {
 const BossTypeStep: React.FC<Props> = ({ value, onNext, onBack, onChange }) => {
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold text-gray-100 mb-4">Choose Your Boss Personality</h2>
+      <h2 className="text-xl font-semibold text-[#374151] mb-4">Choose Your Boss Personality</h2>
       <div className="grid gap-4">
         {bossTypes.map((type) => (
           <button
             key={type.value}
             onClick={() => onChange(type.value)}
             className={`p-4 border rounded-lg text-left shadow-md transition-all duration-200
-              ${value === type.value ? 'border-[#facc15] bg-gray-800' : 'border-gray-700 bg-gray-900 hover:border-[#facc15]'}
-              text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#facc15]`}
+              ${value === type.value ? 'border-[#8b5cf6] bg-[#f8fafc]' : 'border-[#e5e7eb] bg-white hover:border-[#8b5cf6] hover:bg-[#f8fafc]'}
+              text-[#374151] focus:outline-none focus:ring-2 focus:ring-[#8b5cf6]`}
           >
-            <div className="font-medium text-[#facc15]">{type.label}</div>
-            <div className="text-sm text-gray-400">{type.description}</div>
+            <div className="font-medium bg-gradient-to-r from-[#8b5cf6] to-[#a855f7] bg-clip-text text-transparent">{type.label}</div>
+            <div className="text-sm text-[#6b7280]">{type.description}</div>
           </button>
         ))}
       </div>
       <div className="flex justify-between mt-6">
-        <button onClick={onBack} className="text-sm text-gray-400 underline hover:text-[#facc15] transition-all">Back</button>
+        <button onClick={onBack} className="text-sm text-[#6b7280] underline hover:text-[#8b5cf6] transition-all">Back</button>
         <button
           onClick={onNext}
           disabled={!value}
-          className={`px-4 py-2 rounded-lg font-semibold shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#facc15] focus:ring-offset-2 focus:ring-offset-gray-900
-            ${value ? 'bg-[#facc15] text-gray-900 hover:bg-yellow-400' : 'bg-gray-700 text-gray-400 cursor-not-allowed'}`}
+          className={`px-4 py-2 rounded-lg font-semibold shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#8b5cf6] focus:ring-offset-2 focus:ring-offset-white
+            ${value ? 'bg-gradient-to-r from-[#8b5cf6] to-[#a855f7] text-white hover:from-[#7c3aed] hover:to-[#9333ea]' : 'bg-[#f3f4f6] text-[#9ca3af] cursor-not-allowed'}`}
         >
           Next
         </button>
