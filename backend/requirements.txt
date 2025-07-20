@@ -9,4 +9,3 @@ pymongo[srv]==4.3.3
 google-generativeai>=0.3.0
 python-jose>=3.3.0
 flask-limiter>=3.0.0
-flask-restx>=1.1.0
