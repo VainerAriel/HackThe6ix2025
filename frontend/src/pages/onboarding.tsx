@@ -126,6 +126,24 @@ const App: React.FC = () => {
     setCurrentStep((prev) => prev - 1);
   };
 
+  // Function to get authentication headers
+  const getAuthHeaders = async (): Promise<Record<string, string>> => {
+    try {
+      const response = await fetch('/api/auth/token');
+      const { accessToken } = await response.json();
+      
+      return {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      };
+    } catch (error) {
+      console.error('Error getting auth token:', error);
+      return {
+        'Content-Type': 'application/json',
+      };
+    }
+  };
+
   // Function to handle form submission and scenario generation
   const handleSubmit = async () => {
     setLoading(true);
@@ -139,12 +157,13 @@ const App: React.FC = () => {
         confidence: confidence,
       };
 
+      // Get authentication headers
+      const headers = await getAuthHeaders();
+
       // Make API call to generate scenario
-      const response = await fetch(`${API_BASE_URL}/generate_scenario`, { // <--- MODIFIED LINE
+              const response = await fetch(`${API_BASE_URL}/api/chat/generate_scenario`, { // <--- MODIFIED LINE
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify(profile),
       });
 
@@ -181,12 +200,13 @@ const App: React.FC = () => {
     setUserResponse(''); // Clear input after sending
 
     try {
+      // Get authentication headers
+      const headers = await getAuthHeaders();
+
       // Make API call to critique response
-      const response = await fetch(`${API_BASE_URL}/critique_response`, { // <--- MODIFIED LINE
+              const response = await fetch(`${API_BASE_URL}/api/chat/critique_response`, { // <--- MODIFIED LINE
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({ scenario, user_input: userResponse }),
       });
 
