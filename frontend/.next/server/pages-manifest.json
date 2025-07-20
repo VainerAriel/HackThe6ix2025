@@ -4,5 +4,8 @@
   "/_document": "pages/_document.js",
   "/dashboard": "pages/dashboard.js",
   "/onboarding": "pages/onboarding.js",
-  "/chat": "pages/chat.js"
+  "/": "pages/index.js",
+  "/api/auth/[...auth0]": "pages/api/auth/[...auth0].js",
+  "/api/auth/token": "pages/api/auth/token.js",
+  "/login": "pages/login.js"
 }

@@ -1,178 +1,202 @@
-# HackThe6ix 2025
+# PitchPerfect 🎯
 
-A modern web application built with Flask, React, MongoDB, Auth0, and Google's Gemini API for intelligent chat interactions.
+**AI-Powered Workplace Communication Training Platform**
 
-## 🚀 Features
+PitchPerfect is an intelligent web application that helps professionals practice and improve their workplace communication skills through AI-powered roleplay scenarios. Using Google's Gemini AI, users can engage in realistic workplace conversations and receive personalized feedback to enhance their communication effectiveness.
 
-- **Authentication**: Secure user authentication with Auth0
-- **AI Chat**: Intelligent conversations powered by Google's Gemini API
-- **Real-time Messaging**: Interactive chat interface with message history
-- **User Management**: User profiles and conversation management
-- **Modern UI**: Beautiful, responsive design with React
-- **Scalable Backend**: Modular Flask architecture with MongoDB
+## ✨ Features
+
+- **🤖 AI-Powered Roleplay** - Realistic workplace scenarios with intelligent AI characters
+- **📊 Comprehensive Feedback** - Detailed analysis and coaching after each session
+- **🎯 Personalized Training** - 11-step onboarding to customize scenarios to your needs
+- **🔐 Secure Authentication** - Auth0-powered user management
+- **📱 Responsive Design** - Beautiful, modern UI that works on all devices
+- **💾 Session History** - Track your progress and review past conversations
 
 ## 🛠️ Tech Stack
 
-### Backend
-- **Flask**: Python web framework
-- **MongoDB**: NoSQL database for data persistence
-- **Auth0**: Authentication and authorization
-- **Google Gemini API**: AI-powered chat responses
-- **PyMongo**: MongoDB driver for Python
-
 ### Frontend
-- **React**: JavaScript library for building user interfaces
-- **Auth0 React SDK**: Authentication integration
-- **CSS3**: Modern styling with responsive design
-- **Context API**: State management
+- **React** - User interface library
+- **Next.js** - React framework with SSR
+- **TypeScript** - Type-safe JavaScript
+- **Tailwind CSS** - Utility-first CSS framework
+
+### Backend
+- **Flask** - Python web framework
+- **MongoDB** - NoSQL database
+- **Auth0** - Authentication service
+- **Google Gemini API** - AI language model
+
+### Infrastructure
+- **Python** - Backend programming
+- **Node.js** - JavaScript runtime
 
 ## 📁 Project Structure
 
 ```
 HackThe6ix2025/
-├── backend/                          # Flask backend
-│   ├── app/
-│   │   ├── models/                  # MongoDB models
-│   │   ├── routes/                  # API routes
-│   │   ├── services/                # Business logic
-│   │   ├── middleware/              # Auth middleware
-│   │   └── utils/                   # Helper functions
-│   ├── tests/                       # Backend tests
-│   ├── requirements.txt             # Python dependencies
-│   └── run.py                       # Application entry point
-├── frontend/                        # React frontend
+├── frontend/                    # Next.js React application
 │   ├── src/
-│   │   ├── components/              # React components
-│   │   ├── services/                # API services
-│   │   ├── context/                 # React context
-│   │   └── hooks/                   # Custom hooks
-│   └── package.json                 # Node dependencies
-├── docs/                            # Documentation
-├── scripts/                         # Build/deployment scripts
-└── README.md                        # This file
+│   │   ├── components/         # React components
+│   │   │   ├── chat/          # Chat interface components
+│   │   │   └── onboarding/    # Onboarding flow components
+│   │   ├── pages/             # Next.js pages and API routes
+│   │   ├── hooks/             # Custom React hooks
+│   │   ├── lib/               # Utility libraries
+│   │   └── styles/            # Global styles
+│   ├── public/                # Static assets
+│   └── package.json           # Frontend dependencies
+├── backend/                    # Flask Python application
+│   ├── app/
+│   │   ├── models/            # Database models
+│   │   ├── routes/            # API endpoints
+│   │   ├── services/          # Business logic
+│   │   └── middleware/        # Authentication middleware
+│   ├── requirements.txt       # Python dependencies
+│   └── run.py                 # Application entry point
+├── scripts/                    # Setup and deployment scripts
+└── README.md                   # This file
 ```
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-- Python 3.8+
-- Node.js 16+
-- MongoDB (local or cloud)
-- Auth0 account
-- Google Cloud account (for Gemini API)
+- **Node.js 16+** and **npm 8+**
+- **Python 3.8+** and **pip**
+- **Git**
 
-### Installation
+### 1. Clone the Repository
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd HackThe6ix2025
-   ```
+```bash
+git clone <repository-url>
+cd HackThe6ix2025
+```
 
-2. **Install dependencies**
-   ```bash
-   npm run install:all
-   ```
+### 2. One-Click Setup (Windows)
 
-3. **Set up environment variables**
+Run the setup script to install all dependencies:
 
-   Backend (`.env` in `backend/` directory):
-   ```env
-   AUTH0_DOMAIN=your-domain.auth0.com
-   AUTH0_CLIENT_ID=your-client-id
-   AUTH0_CLIENT_SECRET=your-client-secret
-   AUTH0_API_AUDIENCE=your-api-audience
-   MONGODB_URI=mongodb://localhost:27017/hackthe6ix
-   GEMINI_API_KEY=your-gemini-api-key
-   FLASK_SECRET_KEY=your-secret-key
-   FLASK_ENV=development
-   ```
+```powershell
+.\scripts\setup.ps1
+```
 
-   Frontend (`.env` in `frontend/` directory):
-   ```env
-   REACT_APP_AUTH0_DOMAIN=your-domain.auth0.com
-   REACT_APP_AUTH0_CLIENT_ID=your-client-id
-   REACT_APP_AUTH0_AUDIENCE=your-api-audience
-   REACT_APP_API_URL=http://localhost:5000/api
-   ```
+### 3. Manual Setup
 
-4. **Start the development servers**
-   ```bash
-   npm run dev
-   ```
+#### Install Dependencies
 
-   This will start both:
-   - Backend: http://localhost:5000
-   - Frontend: http://localhost:3000
+```bash
+# Install frontend dependencies
+cd frontend
+npm install
 
-## 📚 API Documentation
+# Install backend dependencies
+cd ../backend
+pip install -r requirements.txt
+```
 
-### Authentication Endpoints
-- `GET /api/auth/public` - Public endpoint
-- `GET /api/auth/protected` - Protected endpoint
-- `GET /api/auth/profile` - Get user profile
+#### Environment Configuration
 
-### Chat Endpoints
-- `GET /api/chat/conversations` - Get user conversations
-- `POST /api/chat/conversations` - Create new conversation
-- `GET /api/chat/conversations/{id}` - Get specific conversation
-- `POST /api/chat/conversations/{id}/messages` - Send message
-- `DELETE /api/chat/conversations/{id}` - Delete conversation
-- `POST /api/chat/generate` - Generate single response
+Create `.env` files with your API keys:
 
-### User Endpoints
-- `POST /api/user/data` - Post user data
-- `GET /api/user/health` - Health check
+**Backend** (`backend/.env`):
+```env
+AUTH0_DOMAIN=your-domain.auth0.com
+AUTH0_CLIENT_ID=your-client-id
+AUTH0_CLIENT_SECRET=your-client-secret
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/pitchperfect
+GEMINI_API_KEY=your-gemini-api-key
+FLASK_SECRET_KEY=your-secret-key
+FLASK_ENV=development
+```
+
+**Frontend** (`frontend/.env.local`):
+```env
+NEXT_PUBLIC_AUTH0_SECRET=your-auth0-secret
+NEXT_PUBLIC_AUTH0_ISSUER_BASE_URL=https://your-domain.auth0.com
+NEXT_PUBLIC_AUTH0_BASE_URL=http://localhost:3000
+NEXT_PUBLIC_AUTH0_CLIENT_ID=your-client-id
+NEXT_PUBLIC_AUTH0_CLIENT_SECRET=your-client-secret
+NEXT_PUBLIC_API_URL=http://localhost:5000/api
+```
+
+### 4. Start Development Servers
+
+#### Option A: One-Click Start (Windows)
+
+```powershell
+.\scripts\start-dev.ps1
+```
+
+#### Option B: Manual Start
+
+```bash
+# Terminal 1: Start backend
+cd backend
+python run.py
+
+# Terminal 2: Start frontend
+cd frontend
+npm run dev
+```
+
+### 5. Access the Application
+
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:5000
 
 ## 🔧 Development
 
-### Backend Development
-```bash
-cd backend
-python run.py
-```
+### Available Scripts
 
-### Frontend Development
 ```bash
-cd frontend
-npm start
-```
+# Install all dependencies
+npm run install:all
 
-### Running Tests
-```bash
-npm run test:backend    # Backend tests
-npm run test:frontend   # Frontend tests
-```
+# Start both servers
+npm run dev
 
-### Building for Production
-```bash
+# Build for production
 npm run build:frontend
+
+# Run tests
+npm run test:backend
+npm run test:frontend
+
+# Lint code
+npm run lint:frontend
 ```
 
-## 📖 Detailed Setup Guide
+### API Endpoints
 
-For detailed setup instructions, including MongoDB, Auth0, and Gemini API configuration, see [docs/setup.md](docs/setup.md).
+- `POST /api/chat/start_roleplay` - Start AI roleplay session
+- `POST /api/chat/continue_roleplay` - Continue conversation
+- `POST /api/chat/end_roleplay` - End session and get feedback
+- `POST /api/auth/sync` - Sync user data with database
+
+## 🎯 How It Works
+
+1. **Onboarding** - Complete 11-step questionnaire to customize your scenario
+2. **Roleplay** - Engage in realistic workplace conversations with AI characters
+3. **Feedback** - Receive comprehensive analysis and coaching tips
+4. **Practice** - Repeat and improve your communication skills
 
 ## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License.
 
 ## 🏆 HackThe6ix 2025
 
-This project was created for HackThe6ix 2025 hackathon. It demonstrates modern web development practices with a focus on AI integration and user experience.
+Built for HackThe6ix 2025 hackathon - demonstrating modern AI integration in workplace training applications.
 
-## 🙏 Acknowledgments
+---
 
-- Auth0 for authentication services
-- Google for Gemini AI API
-- MongoDB for database services
-- The React and Flask communities 
+**Ready to perfect your pitch?** 🚀 Start your communication training journey today! 
